@@ -1,0 +1,1 @@
+curl --request POST "http://localhost:8086/api/v2/write?org=0ee5fa4aed348c7e&bucket=IODR_bucket2&precision=ns" --header "Authorization: Token VBLemrOmJcF62lYVj2NT2xT6C3i3FfzSeMBXEUL3aV7oThysMrzoxCSFTHDDBcBzXbVXWKR0XVyrwQInxa-HHA==" --header "Content-Type: text/plain; charset=utf-8" --header "Accept: application/json" --data-binary "airSensors,sensor_id=TLM0201 temperature=3"
