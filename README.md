@@ -2,6 +2,9 @@
 
 This project uses an Arduino with an Ethernet shield to collect and transmit sensor data over the internet. It is designed to be an efficient way to monitor growth of bacterial cultures remotely.
 
+## Notes
+- iodr_influx contains an example of how data can be sent to influxDB through curl
+
 ## Features
 - Uses a watch dog timer to supervise state of the Arduino board
 - Reads sensor data from 8 tubes with connected sensors
