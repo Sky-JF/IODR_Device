@@ -8,6 +8,7 @@ Dan Olson
 Note: 4-19-2025
 - Commented out functions that do not work with giga to test out the board
 - Added if statements to differentiate between mega and giga boards for the migration
+- Commented out parts that are not compatible with gigas with "%%%"
 
 Note: 5-20-2024. 
 - I replaced the Arduino Mega and Ethernet shield on IODR #2
@@ -99,16 +100,17 @@ A15: pin 82, light sensor for tube 1
 
 // Libraries
 #include <SPI.h> //communication with wifi or ethernet shield
-#include <avr/wdt.h> //for watchdog timer
+//#include <avr/wdt.h> //for watchdog timer; not included in giga boards %%%
 #include <OneWire.h> //for temperature sensor
 #include <DallasTemperature.h> //for temperature sensor
 #include <Math.h>
-#include <SoftwareSerial.h> //for serial LCD communication
+//#include <SoftwareSerial.h> //for serial LCD communication %%%
 #include "ThingSpeak.h"
-#include <EEPROM.h> //used to store blank values so they persist between resets; used with Arduino mega boards
+//#include <EEPROM.h> //used to store blank values so they persist between resets; used with Arduino mega boards %%%
 #include <FlashStorage.h> //used to store blank values so they persist between resets; used with Arduino giga boards
-#include <gloSerialOLED.h> //for OLED character display
-gloStreamingTemplate //allows carat notation for OLED display
+#include <FlashAsEEPROM.h>
+#include <gloSerialOLED.h> //for OLED character display %%%
+//gloStreamingTemplate //allows carat notation for OLED display
 
 //Parameters for IODR with Arduino Giga R1; change ID as necessary; this block assumes the ID is 1
 #if IODR_ID == 4
@@ -131,7 +133,7 @@ gloStreamingTemplate //allows carat notation for OLED display
   // #define TEMP_SENSE_PIN 44
 
   //double check these depending on network being connected 
-  byte mac[] = { 0xA8, 0x61, 0x0A, 0xAE, 0x3F, 0xBC }; //mac address for Arduino giga
+  byte mac[] = { 0x0E, 0x0E, 0x02, 0x02, 0x02, 0xA8 }; //mac address for IODR #4
   byte ip[] =      { 192, 168, 220, 214 }; //the IP address when connected to my personal network
 #endif
 
@@ -149,7 +151,7 @@ gloStreamingTemplate //allows carat notation for OLED display
   #define TEMP_SENSE_PIN 44
 
   // Network parameters for IODR #1
-  byte mac[] = { 0x0E, 0x0E, 0x02, 0x02, 0x02, 0xA8 }; //mac address for IODR #1 new ethernet shield W5500
+  byte mac[] = { 0xA8, 0x61, 0x0A, 0xAE, 0x3F, 0xBC }; //mac address for IODR #1 new ethernet shield W5500
   byte ip[] =      { 129, 170, 64, 61 }; //the IP address for IODR #1
 #endif
 
@@ -221,7 +223,7 @@ float ODvalue[] = {0,0,0,0,0,0,0,0};
 int LEDoffReading[] = {0,0,0,0,0,0,0,0};
 int LEDonReading[] = {0,0,0,0,0,0,0,0};
 int pointsToAverage = 10; //number of light readings to average in each data point sent to Cosm
-int blankValue[] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000}; //default blank value of 1000 for each light sensor
+int blankValue[] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000}; //default blank value of 4000 for each light sensor (12-bit ADC) 
 
 int blankButtonState[] = {0,0,0,0,0,0,0,0}; // status of buttons for blanking individual tubes
 int blankButtonPin[] = {20, 22, 24, 26, 28, 30, 32, 34}; 
@@ -240,7 +242,7 @@ boolean displayTubeSummary = true;
 // Initialize the Ethernet client library
 // with the IP address and port of the server 
 // that you want to connect to (port 80 is default for HTTP):
-//EthernetClient client; //comment out for giga test ***
+//EthernetClient client; //comment out for giga test %%%
 
 // Network configuration for static IP address on Dartmouth network
 byte subnet[] =  { 255, 255, 248, 0 }; //the IP mask for both IODR devices
@@ -272,7 +274,7 @@ void setup(void)
   Serial.println(VERSION);
   Serial.println("==========================");
   myOLED <<gloClear<<"Internet OD reader v" << VERSION << " ID: " << IODR_ID;
-  //wdt_reset(); //not part of giga R1, reimplement later; all instances have been commented out and marked with "***"
+  //wdt_reset(); //not part of giga R1, reimplement later; all instances have been commented out and marked with "%%%"
 
   // set up DS18B20 digital thermometer
   Serial.println("calling initTemp()");
@@ -284,7 +286,7 @@ void setup(void)
   //read blankValues from EEPROM and store in blankValue integer array
   //these values are saved between resets
    for (int i=0; i < numTubes; i++){
-     //readBlankFromEEPROM(i); //not compatible with giga R1 board; all instances commented out with "***"
+     readBlankFromEEPROM(i); //not compatible with giga R1 board; all instances commented out with "%%%"
    }
   
   //set up I/O pins
@@ -369,13 +371,13 @@ void setup(void)
   
   Serial.println("     ***** Network initialized *****");
   //checkTiming();
-  //wdt_reset(); //***
+  //wdt_reset(); //%%%
   delay(3000); // delay so we can read the info on the OLED display
 
   Serial.println("Setup complete");
   myOLED << gloClear;
   checkTiming();
-  //wdt_reset();  //***
+  //wdt_reset();  //%%%
 
   
 }
@@ -390,7 +392,7 @@ void setup(void)
 //------------------------------------------------------------------------
 void loop(){
   // Reset watchdog
-  //wdt_reset(); //***
+  //wdt_reset(); //%%%
   
   //digitalWrite(startMainLoopLED, HIGH);
   
@@ -472,6 +474,7 @@ void writeBlankToEEPROM (int tubeIndex){
   byte l = lowByte(value);
   EEPROM.write(tubeIndex*2, h);  //store the high byte in the first address 
   EEPROM.write(tubeIndex*2+1, l); //store the low byte in the second address 
+  // perhaps add EEPROM.commit(); if flashstorage
 }
 
 
@@ -530,7 +533,7 @@ void checkBlankButtons(){
       if (blankButtonState[i] > NUM_CYCLES_TO_RESET) {
         blankValue[i] = (int)lightIn[i]; // reset blankValue for tube i
         Serial << "blankButtonState[" << i << "]=" << blankValue[i];
-        //writeBlankToEEPROM(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility ***
+        writeBlankToEEPROM(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility %%%
         displayTubeReset(i); // write a message to the serial LCD saying the tube was reset
         blankButtonState[i] = 0; // reset the blank button state
       }
@@ -721,7 +724,7 @@ void uploadDataToThingspeak(){
   int odWriteResponse = ThingSpeak.writeFields(OD_CHANNEL_ID, OD_API_KEY);
   Serial.println(odWriteResponse);
   myOLED << gloReturn << odWriteResponse; // send data to OLED display
-  //wdt_reset(); //***
+  //wdt_reset(); //%%%
 
   //send temperature data to thingspeak
   Serial.println("sending temperature data to thingspeak");
@@ -731,7 +734,7 @@ void uploadDataToThingspeak(){
   myOLED << gloReturn << tempWriteResponse; 
   //send information to OLED display
   delay(1500); // enough time to read the display
-  //wdt_reset(); //***
+  //wdt_reset(); //%%%
 
   if (odWriteResponse == 200){ // 200 is the server response from Thingspeak indicating success
     numFailedUploads = 0;
@@ -746,7 +749,7 @@ void uploadDataToThingspeak(){
     Serial.print("Failed uploads = ");
     Serial.println(numFailedUploads);
     // try to reset the network connection and re-connect to thingspeak
-    //Ethernet.begin(mac, ip, dnsServer, gateway, subnet); // try to connect to the network with fixed IP address; commented out for giga testing ***
+    //Ethernet.begin(mac, ip, dnsServer, gateway, subnet); // try to connect to the network with fixed IP address; commented out for giga testing %%%
     WiFi.disconnect();
     connectToWiFi(); // try to reconnect
     ThingSpeak.begin(client); 
