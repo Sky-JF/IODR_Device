@@ -108,12 +108,12 @@ A15: pin 82, light sensor for tube 1
 #include <OneWire.h> //for temperature sensor
 #include <DallasTemperature.h> //for temperature sensor
 #include <Math.h>
-//#include <SoftwareSerial.h> //for serial LCD communication %%%
-#include "ThingSpeak.h"
+//#include <SoftwareSerial.h> //for serial LCD communication; Not usable with Giga 
+//#include "ThingSpeak.h" %%%
 //#include <EEPROM.h> //used to store blank values so they persist between resets; used with Arduino mega boards %%%
-#include <FlashStorage.h> //used to store blank values so they persist between resets; used with Arduino giga boards
-#include <FlashAsEEPROM.h> // might not work %%%
-#include <gloSerialOLED.h> //for OLED character display %%%
+// #include <FlashStorage.h> //used to store blank values so they persist between resets; used with Arduino giga boards %%%
+// #include <FlashAsEEPROM.h> // might not work %%%
+#include <gloSerialOLED.h> //for OLED character display 
 //gloStreamingTemplate //allows carat notation for OLED display
 
 /* ****************** Local Libraries ******************* */
@@ -122,6 +122,7 @@ A15: pin 82, light sensor for tube 1
 //Parameters for IODR with Arduino Giga R1; change ID as necessary; this block assumes the ID is 1
 #if IODR_ID == 4
   #include <WiFi.h> //for Arduino Giga board wifi connection
+  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
   // Login details for Wifi Network
   char ssid[] = "Dartmouth Public";        // your network SSID (name)
@@ -221,10 +222,11 @@ boolean temperatureDeviceFound = false;
 // LEDs and light sensors
 int ledPin = 9;
 int yellowLED = 2;
-int numTubes = 8;
+#define numTubes 8
 int wdTimer = 3;
 
-int lightInPin[] = {A7, A6, A13, A12, A11, A10, A9, A8}; //pins for analog inputs for light sensor 
+const int lightInPin[numTubes] = {7, 6, 13, 12, 11, 10, 9, 8}; //pins for analog inputs for light sensor 
+// {A7, A6, A13, A12, A11, A10, A9, A8}
 //%%% Changed pins A15 and A14 to A7 and A6, respectively
 float lightIn[] = {0,0,0,0,0,0,0,0}; //value of light sensor
 float ODvalue[] = {0,0,0,0,0,0,0,0};
@@ -243,7 +245,7 @@ int calibrationMode = 1; // 1 is for no calibration, 0 is for calibration mode. 
 int calibrationCount = 0; // keeps track of how many times the calibration button was pressed
 
 // for OLED serial display
-gloSoftSerialSetup( myOLED, 18, noninverted ); 
+//gloSoftSerialSetup( myOLED, 18, noninverted ); 
 boolean displayTubeSummary = true;
 
 
@@ -272,8 +274,9 @@ void setup(void)
 
   //set up serial LCD display
   // Begin using the serial object created above.
-  gloSoftSerialBegin( myOLED ) ;
-  myOLED << gloClear << gloFont_1w1h ;
+  //gloSoftSerialBegin( myOLED ) ;
+  Serial2.begin(9600); // Serial port for printing to the LCD
+  Serial2 << gloClear << gloFont_1w1h ;
   delay(500); // wait for lcd display to boot up
 
   //announce version information
@@ -281,7 +284,7 @@ void setup(void)
   Serial.print("Internet OD reader v");
   Serial.println(VERSION);
   Serial.println("==========================");
-  myOLED <<gloClear<<"Internet OD reader v" << VERSION << " ID: " << IODR_ID;
+  Serial2 <<gloClear<<"Internet OD reader v" << VERSION << " ID: " << IODR_ID;
   //wdt_reset(); //not part of giga R1, reimplement later; all instances have been commented out and marked with "%%%"
 
   // set up DS18B20 digital thermometer
@@ -294,14 +297,14 @@ void setup(void)
   //read blankValues from EEPROM and store in blankValue integer array
   //these values are saved between resets
    for (int i=0; i < numTubes; i++){
-     readBlankFromEEPROM(i); //not compatible with giga R1 board; all instances commented out with "%%%"
+     //readBlankFromEEPROM(i); //not compatible with giga R1 board; all instances commented out with "%%%"
    }
   
   //set up I/O pins
   pinMode(ledPin, OUTPUT);
   pinMode(yellowLED, OUTPUT);
   pinMode(wdTimer, OUTPUT);
-  analogReference(EXTERNAL);
+  //analogReference(EXTERNAL);
   pinMode(calibrationPin, INPUT);
   pinMode(53, OUTPUT); //necessary for WiFi shield function
 
@@ -312,7 +315,7 @@ void setup(void)
   
 
   // send message to OLED display
-  myOLED << gloReturn << "connecting to internet..."; 
+  Serial2 << gloReturn << "connecting to internet..."; 
   
   #if defined(ARDUINO_GIGA) //only check for wifi module if board is a giga
   // Initialize wifi
@@ -348,14 +351,14 @@ void setup(void)
 
 
   // try to connect to Thingspeak
-  ThingSpeak.begin(client); 
+  //ThingSpeak.begin(client); 
   /*
   Serial.print("Client connection status:");
   Serial.println(client.connected());
   while (!client.connected())
   {
     Serial.println(F("Couldn't begin()! Check your wiring?"));
-    myOLED << gloClear << "error, no internet connection, please reset";
+    Serial2 << gloClear << "error, no internet connection, please reset";
     delay(500); // wait a bit and try again, eventually the external watchdog timer will do a hard reset
     ThingSpeak.begin(client); // try to connect to the Thingspeak again
     //while(1);
@@ -367,14 +370,14 @@ void setup(void)
     IPAddress ip = WiFi.localIP();
     Serial.print("IP = ");
     Serial.println(WiFi.localIP());
-    myOLED << gloClear << "IP=" << ip[0] << "." << ip[1] << "." << ip[2] << "." << ip[3];
-    myOLED << gloReturn << "mac=N/A"; // GIGA WiFi library doesn't give MAC by default
+    Serial2 << gloClear << "IP=" << ip[0] << "." << ip[1] << "." << ip[2] << "." << ip[3];
+    Serial2 << gloReturn << "mac=N/A"; // GIGA WiFi library doesn't give MAC by default
   #else
     // Ethernet: Display IP and MAC address
     Serial.print("IP = ");
     Serial.println(Ethernet.localIP());
-    myOLED << gloClear << "IP=" << Ethernet.localIP();
-    myOLED << gloReturn << "mac=" << mac[0] << ":" << mac[1] << ":" << mac[2] << ":" << mac[3] << ":" << mac[4] << ":" << mac[5];
+    Serial2 << gloClear << "IP=" << Ethernet.localIP();
+    Serial2 << gloReturn << "mac=" << mac[0] << ":" << mac[1] << ":" << mac[2] << ":" << mac[3] << ":" << mac[4] << ":" << mac[5];
   #endif
   
   Serial.println("     ***** Network initialized *****");
@@ -383,7 +386,7 @@ void setup(void)
   delay(3000); // delay so we can read the info on the OLED display
 
   Serial.println("Setup complete");
-  myOLED << gloClear;
+  Serial2 << gloClear;
   checkTiming();
   //wdt_reset();  //%%%
 
@@ -443,7 +446,7 @@ void loop(){
     
     //connect to thingspeak
     Serial.println("@@@@@ uploadDataToThingspeak() @@@@@");
-    uploadDataToThingspeak();
+    //uploadDataToThingspeak();
     Serial.println("@@@@@ checkTiming() @@@@@");
     checkTiming();  
     // update connection time so we wait before connecting again
@@ -480,8 +483,8 @@ void writeBlankToEEPROM (int tubeIndex){
   int value = blankValue[tubeIndex];
   byte h = highByte(value);
   byte l = lowByte(value);
-  EEPROM.write(tubeIndex*2, h);  //store the high byte in the first address 
-  EEPROM.write(tubeIndex*2+1, l); //store the low byte in the second address 
+  //EEPROM.write(tubeIndex*2, h);  //store the high byte in the first address %%%
+  //EEPROM.write(tubeIndex*2+1, l); //store the low byte in the second address %%%
   // perhaps add EEPROM.commit(); if flashstorage
 }
 
@@ -494,9 +497,9 @@ void readBlankFromEEPROM (int tubeIndex){
   Serial.print(tubeIndex);
   Serial.println(" from EEPROM");
   word value;
-  byte h = EEPROM.read(tubeIndex*2); //read low byte from EEPROM
-  byte l = EEPROM.read(tubeIndex*2+1); //read high byte from EEPROM
-  value = word(h,l);
+  //byte h = EEPROM.read(tubeIndex*2); //read low byte from EEPROM %%%
+  //byte l = EEPROM.read(tubeIndex*2+1); //read high byte from EEPROM %%%
+  //value = word(h,l); %%%
   blankValue[tubeIndex] = (int)value; //cast value to an integer and store the result in the blankValue array
 }
 
@@ -541,7 +544,7 @@ void checkBlankButtons(){
       if (blankButtonState[i] > NUM_CYCLES_TO_RESET) {
         blankValue[i] = (int)lightIn[i]; // reset blankValue for tube i
         Serial << "blankButtonState[" << i << "]=" << blankValue[i];
-        writeBlankToEEPROM(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility %%%
+        //writeBlankToEEPROM(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility %%%
         displayTubeReset(i); // write a message to the serial LCD saying the tube was reset
         blankButtonState[i] = 0; // reset the blank button state
       }
@@ -598,8 +601,8 @@ void serialPrintState(){
 
 //display a message on the LCD saying that one tube blank value was reset
 void displayTubeReset(int tubeNum){
-  myOLED << gloClear << "Tube: " << tubeNum + 1; //tubNum index starts at 0, so increment by one for human-readable display
-  myOLED << gloReturn << "Was reset" ;
+  Serial2 << gloClear << "Tube: " << tubeNum + 1; //tubNum index starts at 0, so increment by one for human-readable display
+  Serial2 << gloReturn << "Was reset" ;
   
   Serial.print("displayTubeReset:");
   //Serial.println(resetTopLine);
@@ -625,7 +628,7 @@ void displayTubeStatusSummary(){
   for (int i=0; i<4; i++){  
     //loop through each character in odval and add it to the displayLine char array
     //add odval in first position (i.e. tubes 1, 2, 3 and 4)
-    dtostrf(ODvalue[i], 4, 2, odval);
+    //dtostrf(ODvalue[i], 4, 2, odval); %%% thingspeak
     //Serial << "   odval[" << i << "]=" << odval <<" length=" << sizeof(odval);
     
     for (int j = 0; j<sizeof(odval)-1; j++){ //sizeof(odval)-1 is to avoid including the "end of string" character
@@ -633,7 +636,7 @@ void displayTubeStatusSummary(){
       //Serial << "        displayLine["<<i<<"]["<<j+2<<"]="<<odval[j];
     }
     //add odval in second position (i.e. tubes 5, 6, 7 and 8)
-    dtostrf(ODvalue[i+4], 4, 2, odval);  
+    //dtostrf(ODvalue[i+4], 4, 2, odval);  %%% thingspeak
     //Serial << "   odval_2_[" << i << "]=" << odval <<" length=" << sizeof(odval);
     //Serial.println();
     for (int j = 0; j<sizeof(odval)-1; j++){
@@ -643,7 +646,7 @@ void displayTubeStatusSummary(){
 
   //add temperature value
   char tempStr[4];
-  dtostrf(temperature, 4,2, tempStr);
+  //dtostrf(temperature, 4,2, tempStr); %%% thingspeak
   displayLine[0][15] = tempStr[0];
   displayLine[1][15] = tempStr[1];
   displayLine[2][15] = tempStr[2];
@@ -656,9 +659,9 @@ void displayTubeStatusSummary(){
   }
 */  
    //write the result to the OLED display
-   myOLED << gloHome;
+   Serial2 << gloHome;
    for (int i = 0; i<4; i++){
-     myOLED << displayLine[i];
+     Serial2 << displayLine[i];
    }
   
 }
@@ -677,18 +680,18 @@ void displayTubeStatus(int tubeNum){
   char botLine[] = "OD=     Raw=    ";
   
   //convert variables to strings of the appropriate length
-  dtostrf(blankValue[tubeNum], 4, 0, bval);
+  //dtostrf(blankValue[tubeNum], 4, 0, bval); //%%% thingspeak
   //Serial.println();
   //dtostrf(LEDonReading[lastButtonPressed], 4, 0, ltin); //use LEDonReading for the raw value.  
                                                           //We want to be able to see how close we are to saturating the detector when we're adjusting the potentiometer.
                                                           //Note that the raw value will show fluctuations due to ambient light, but the lightIn value (i.e. abient light subtracted)
                                                           //is what is being used to calculate the OD value
-  dtostrf(lightIn[tubeNum], 4, 0, ltin);        //use lightIn for raw value
+  //dtostrf(lightIn[tubeNum], 4, 0, ltin);  %%%thingspeak      //use lightIn for raw value
   //  Serial <<"       ltin=" <<ltin;
   //Serial.println();
                                                           //not sure which I prefer, lightIn or LEDonReading, for raw value
                                                           //using lightIn for now
-  dtostrf(ODvalue[tubeNum], 4, 2, odval);
+  //dtostrf(ODvalue[tubeNum], 4, 2, odval); %%%thingspeak
   // Serial <<"       odval=" <<odval;
   //Serial.println();
 
@@ -708,8 +711,8 @@ void displayTubeStatus(int tubeNum){
   //Serial << "\nbotLine=" << botLine;
   
   //send OLED display output to OLED display
-  myOLED << gloHome << topLine << gloSetCursor(0,1) << botLine; //output compiled lines to OLED display
-  myOLED << "                                "; //clear the bottom two lines of the display
+  Serial2 << gloHome << topLine << gloSetCursor(0,1) << botLine; //output compiled lines to OLED display
+  Serial2 << "                                "; //clear the bottom two lines of the display
 }
 
 
@@ -720,53 +723,54 @@ void displayTubeStatus(int tubeNum){
 //TEMP_API_KEY
 void uploadDataToThingspeak(){
   // send information to OLED display
-  myOLED << gloClear << "Sending data to Thingspeak...";
+  Serial2 << gloClear << "Sending data to Thingspeak...";
   
     //loop through datastreams (except temperature) and update data
   for (int i=0; i<numTubes; i++){
-      ThingSpeak.setField(i+1, ODvalue[i]); //set each field one-by-one, thingspeak channels are indexed from 1
+      //ThingSpeak.setField(i+1, ODvalue[i]); //set each field one-by-one, thingspeak channels are indexed from 1
     }
 
   // send OD data to thingspeak
   Serial.println("sending OD data to thingspeak");
-  int odWriteResponse = ThingSpeak.writeFields(OD_CHANNEL_ID, OD_API_KEY);
-  Serial.println(odWriteResponse);
-  myOLED << gloReturn << odWriteResponse; // send data to OLED display
+  //int odWriteResponse = ThingSpeak.writeFields(OD_CHANNEL_ID, OD_API_KEY);
+  //Serial.println(odWriteResponse); %%% thingspeak
+  //Serial2 << gloReturn << odWriteResponse; %%%thingspeak // send data to OLED display
   //wdt_reset(); //%%%
 
   //send temperature data to thingspeak
   Serial.println("sending temperature data to thingspeak");
-  ThingSpeak.setField(TEMP_EXT_CHANNEL, temperature);
-  int tempWriteResponse = ThingSpeak.writeFields(TEMP_CHANNEL_ID, TEMP_API_KEY);
-  Serial.println(tempWriteResponse);
-  myOLED << gloReturn << tempWriteResponse; 
+  //ThingSpeak.setField(TEMP_EXT_CHANNEL, temperature);
+  //int tempWriteResponse = ThingSpeak.writeFields(TEMP_CHANNEL_ID, TEMP_API_KEY); %%% thingspeak
+  //Serial.println(tempWriteResponse); %%% thingspeak
+  //Serial2 << gloReturn << tempWriteResponse;  %%%thingspeak
   //send information to OLED display
   delay(1500); // enough time to read the display
   //wdt_reset(); //%%%
 
-  if (odWriteResponse == 200){ // 200 is the server response from Thingspeak indicating success
-    numFailedUploads = 0;
-    digitalWrite(wdTimer, HIGH); // reset the watchdog timer
-    Serial.println("numFailedUploads reset");
-    delay(500);
-    digitalWrite(wdTimer, LOW);
-  }
-  else{
-    numFailedUploads += 1;
-    myOLED << gloClear << "Failed uploads = " << numFailedUploads;
-    Serial.print("Failed uploads = ");
-    Serial.println(numFailedUploads);
-    // try to reset the network connection and re-connect to thingspeak
-    //Ethernet.begin(mac, ip, dnsServer, gateway, subnet); // try to connect to the network with fixed IP address; commented out for giga testing %%%
-    WiFi.disconnect();
-    connectToWiFi(); // try to reconnect
-    ThingSpeak.begin(client); 
-    delay(1000); // allow time to read the display
-  }
+  // %%%% thingspeak (whole block)
+  // if (odWriteResponse == 200){ // 200 is the server response from Thingspeak indicating success
+  //   numFailedUploads = 0;
+  //   digitalWrite(wdTimer, HIGH); // reset the watchdog timer
+  //   Serial.println("numFailedUploads reset");
+  //   delay(500);
+  //   digitalWrite(wdTimer, LOW);
+  // }
+  // else{
+  //   numFailedUploads += 1;
+  //   Serial2 << gloClear << "Failed uploads = " << numFailedUploads;
+  //   Serial.print("Failed uploads = ");
+  //   Serial.println(numFailedUploads);
+  //   // try to reset the network connection and re-connect to thingspeak
+  //   //Ethernet.begin(mac, ip, dnsServer, gateway, subnet); // try to connect to the network with fixed IP address; commented out for giga testing %%%
+  //   //WiFi.disconnect();
+  //   //connectToWiFi(); // try to reconnect
+  //   //ThingSpeak.begin(client); 
+  //   delay(1000); // allow time to read the display
+  // }
 
   // this if block should be unnecessary, since the watchdog timer will reset after 5 minutes with no successful upload (i.e. about 5 failed tries)
   if (numFailedUploads > MAX_FAILED_UPLOADS){
-    myOLED << gloClear << "Upload error: waiting to reset..."; 
+    Serial2 << gloClear << "Upload error: waiting to reset..."; 
     digitalWrite(wdTimer, LOW); // turn off the upload light to allow the watchdog timer to reset
     delay(400000); // delay 6 minutes, should trigger watchdog timer to reset
   }
