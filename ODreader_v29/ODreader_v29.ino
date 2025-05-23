@@ -5,6 +5,9 @@ Version 29
 Dan Olson
 3-14-2024
 
+Note: 4-27-2025
+- Changed light read pins since A15 and A14 do not exist in the giga
+
 Note: 4-19-2025
 - Commented out functions that do not work with giga to test out the board
 - Added if statements to differentiate between mega and giga boards for the migration
@@ -99,6 +102,7 @@ A15: pin 82, light sensor for tube 1
 #define IODR_ID 4
 
 // Libraries
+#include <stdlib.h>
 #include <SPI.h> //communication with wifi or ethernet shield
 //#include <avr/wdt.h> //for watchdog timer; not included in giga boards %%%
 #include <OneWire.h> //for temperature sensor
@@ -108,9 +112,12 @@ A15: pin 82, light sensor for tube 1
 #include "ThingSpeak.h"
 //#include <EEPROM.h> //used to store blank values so they persist between resets; used with Arduino mega boards %%%
 #include <FlashStorage.h> //used to store blank values so they persist between resets; used with Arduino giga boards
-#include <FlashAsEEPROM.h>
+#include <FlashAsEEPROM.h> // might not work %%%
 #include <gloSerialOLED.h> //for OLED character display %%%
 //gloStreamingTemplate //allows carat notation for OLED display
+
+/* ****************** Local Libraries ******************* */
+//#include "SensorFunctions.h"
 
 //Parameters for IODR with Arduino Giga R1; change ID as necessary; this block assumes the ID is 1
 #if IODR_ID == 4
@@ -124,17 +131,17 @@ A15: pin 82, light sensor for tube 1
   WiFiClient client; //used by thingspeak
 
   //definitions might need to be modified
-  // #define OD_CHANNEL_ID 405675
-  // #define OD_API_KEY "J1AW4IF7557WHYAX" //write API key
-  // #define TEMP_CHANNEL_ID 890567
-  // #define TEMP_API_KEY "C509JHJCZNRGDNRE" //write API key
-  // #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
-  // #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
-  // #define TEMP_SENSE_PIN 44
+  #define OD_CHANNEL_ID 405675
+  #define OD_API_KEY "J1AW4IF7557WHYAX" //write API key
+  #define TEMP_CHANNEL_ID 890567
+  #define TEMP_API_KEY "C509JHJCZNRGDNRE" //write API key
+  #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
+  #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
+  #define TEMP_SENSE_PIN 44
 
   //double check these depending on network being connected 
-  byte mac[] = { 0x0E, 0x0E, 0x02, 0x02, 0x02, 0xA8 }; //mac address for IODR #4
-  byte ip[] =      { 192, 168, 220, 214 }; //the IP address when connected to my personal network
+  //byte mac[] = { 0x0E, 0x0E, 0x02, 0x02, 0x02, 0xA8 }; //mac address for IODR #4 %%%
+  //byte ip[] =      { 192, 168, 220, 214 }; //the IP address when connected to my personal network %%%
 #endif
 
 // Parameters for IODR #1
@@ -142,10 +149,10 @@ A15: pin 82, light sensor for tube 1
   #include <Ethernet2.h> //ethernet shield W5500 chip
 
   // ThingSpeak parameters for IODR #1
-  #define OD_CHANNEL_ID 405675
-  #define OD_API_KEY "J1AW4IF7557WHYAX" //write API key
-  #define TEMP_CHANNEL_ID 890567
-  #define TEMP_API_KEY "C509JHJCZNRGDNRE" //write API key
+  #define OD_CHANNEL_ID 2926522
+  #define OD_API_KEY "4ZLMGG2B59CUGMNV" //write API key
+  #define TEMP_CHANNEL_ID 2926522
+  #define TEMP_API_KEY "4ZLMGG2B59CUGMNV" //write API key
   #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
   #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
   #define TEMP_SENSE_PIN 44
@@ -217,7 +224,8 @@ int yellowLED = 2;
 int numTubes = 8;
 int wdTimer = 3;
 
-int lightInPin[] = {A15, A14, A13, A12, A11, A10, A9, A8}; //pins for analog inputs for light sensor
+int lightInPin[] = {A7, A6, A13, A12, A11, A10, A9, A8}; //pins for analog inputs for light sensor 
+//%%% Changed pins A15 and A14 to A7 and A6, respectively
 float lightIn[] = {0,0,0,0,0,0,0,0}; //value of light sensor
 float ODvalue[] = {0,0,0,0,0,0,0,0};
 int LEDoffReading[] = {0,0,0,0,0,0,0,0};
