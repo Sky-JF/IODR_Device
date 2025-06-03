@@ -245,15 +245,15 @@ void setup(void) {
   //set up I/O pins
   pinMode(ledPin, OUTPUT);
   pinMode(yellowLED, OUTPUT);
-  pinMode(wdTimer, OUTPUT);
+  // pinMode(wdTimer, OUTPUT); // %%% Review this 
   //analogReference(EXTERNAL);
   pinMode(calibrationPin, INPUT);
   pinMode(53, OUTPUT); //necessary for WiFi shield function
 
   // reset external watchdog timer
-  digitalWrite(wdTimer, HIGH);
+  // digitalWrite(wdTimer, HIGH); // %%% Review this
   delay(100);
-  digitalWrite(wdTimer, LOW);
+  // digitalWrite(wdTimer, LOW); //%%% Review this
   
 
   // send message to OLED display
@@ -725,7 +725,7 @@ void uploadDataToThingspeak() {
   // this if block should be unnecessary, since the watchdog timer will reset after 5 minutes with no successful upload (i.e. about 5 failed tries)
   if (numFailedUploads > MAX_FAILED_UPLOADS){
     Serial2 << gloClear << "Upload error: waiting to reset..."; 
-    digitalWrite(wdTimer, LOW); // turn off the upload light to allow the watchdog timer to reset
+    //digitalWrite(wdTimer, LOW); // turn off the upload light to allow the watchdog timer to reset %%% not using wdTimer
     delay(400000); // delay 6 minutes, should trigger watchdog timer to reset
   }
   
