@@ -1,5 +1,6 @@
 Test connecting wires between analogue pins
-Test voltage divider to determine if analogue pins are reading correctly
+Test voltage divider to determine if analogue pins are reading correctly -> use
+potentiometer to test voltage read by each pin
 Adjust resolution of analogue reads
 Advanced analogue library?
 Fix LCD printing issues
@@ -10,3 +11,5 @@ Integrate Thingspeak
 Integrate InfluxDB
 Integrate Flash memory/EEPROM
 
+  Websites:
+https://docs.arduino.cc/libraries/arduino_advancedanalog/
