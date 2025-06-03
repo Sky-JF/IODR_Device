@@ -1,68 +1,4 @@
 /*
-Internet OD reader (IODR) program
-Detect growth of bacterial cultures by measuring the absorbtion of a light
-Version 29
-Dan Olson
-3-14-2024
-
-Note: 4-27-2025
-- Changed light read pins since A15 and A14 do not exist in the giga
-
-Note: 4-19-2025
-- Commented out functions that do not work with giga to test out the board
-- Added if statements to differentiate between mega and giga boards for the migration
-- Commented out parts that are not compatible with gigas with "%%%"
-
-Note: 5-20-2024. 
-- I replaced the Arduino Mega and Ethernet shield on IODR #2
-- I replaced the Ethernet shield on IODR #3
-
-New in v29 3-14-2024
-- increased Thingspeak update time interval from 60 to 90 seconds
-
-New in v28 4-8-2022
-- Support for 
-
-New in v27 10-25-2019
-- Added more watchdog timer resets to avoid unnecessary resetting
-
-New in v26 10-16-2019
-- Updated MAC address for IODR #1 because I replaced all of the circuit boards
-- Switched temperature sensor to pin 44
-- Set up new thingspeak channel to hold temperature data from all OD readers
-
-New in v25
-- IODR_ID is a constant that sets up the device-specific parameters
-
-New in v24
-- moved up gloSoftSerialBegin to top of setup loop. Previously there was an instruction sending data to the 
-  display before the Begin command was called
-- disabled internal watchdog timer because I'm using an external one
-- set up to use manual IP configuration instead of DHCP server
-- set up to make repeated attempts to connect to network
-- send thingspeak response codes to OLED display
-- reset device if too many unsuccessful attempts to send data to thingspeak
-
-New in v23
-- replaced ethernet shield with new one from Adafruit. It uses the W5500 chip, so I needed to change to the Ethernet2 library.
-- I commented out a bunch of the println statments so I can see what's happening to the thingspeak uploads
-- In some cases, the MemoryUsage check seems to interfere with uploading data to ThingSpeak
-- I think the temperature sensor is a DS18B20, not DS18S20. Maybe this was causing read problems?
-- I disabled the getTemp() call in the loop to see if this solves the freezing problem
-
-New in v22
-- changing over from xively to thingspeak for storing cloud data, since xively just shut down
-- I'm using the ThingSpeak account associated with my daniel.g.olson@dartmouth.edu account
-
-New in v21
--still having intermittent freezing problems, trying to troubleshoot.
-
-For use with v1 of the IODR, 
- -using an Arduino Mega 2560 
- -Arduino ethernet shield (replaced Adafruit CC3000 WiFi shield, which had stability problems)
- -IODR v2 shield circuit board (designed by me)
- -note:  the Spol jumper on the OLED display board needs to be cut in order for the display to function properly with the Arduino
-
 Pin assignments:
 0: used by ethernet shield
 1: used by ethernet shield
@@ -115,6 +51,10 @@ A15: pin 82, light sensor for tube 1
 // #include <FlashAsEEPROM.h> // might not work %%%
 #include <gloSerialOLED.h> //for OLED character display 
 //gloStreamingTemplate //allows carat notation for OLED display
+#include "mbed.h" //WDT test for giga %%%
+mbed::Watchdog &watchdog = mbed::Watchdog::get_instance();
+
+
 
 /* ****************** Local Libraries ******************* */
 //#include "SensorFunctions.h"
@@ -225,9 +165,9 @@ int yellowLED = 2;
 #define numTubes 8
 int wdTimer = 3;
 
-const int lightInPin[numTubes] = {7, 6, 13, 12, 11, 10, 9, 8}; //pins for analog inputs for light sensor 
-// {A7, A6, A13, A12, A11, A10, A9, A8}
-//%%% Changed pins A15 and A14 to A7 and A6, respectively
+const PureAnalogPin lightInPin[numTubes] = {A13, A13, A13, A12, A11, A10, A9, A8}; //pins for analog inputs for light sensor 
+// {A15, A14, A13, A12, A11, A10, A9, A8}
+// Pins A13 and A12 require the use of Arduino_AdvancedAnalogue.h library
 float lightIn[] = {0,0,0,0,0,0,0,0}; //value of light sensor
 float ODvalue[] = {0,0,0,0,0,0,0,0};
 int LEDoffReading[] = {0,0,0,0,0,0,0,0};
@@ -270,6 +210,9 @@ void setup(void)
   //enable the watchdog timer at the beginning of the setup loop
   //if the program hangs for more than 8 seconds, the arduino will be reset
   //when the program is functioning correctly, the watchdog timer needs to be reset more frequently than every 8 seconds
+  if (watchdog.start(30000)) {
+    Serial.println("Initialized watchdog successfully");
+  } // 30-second timeout ; max of 32760 ms
   //wdt_enable(WDTO_8S);
 
   //set up serial LCD display
@@ -286,6 +229,7 @@ void setup(void)
   Serial.println("==========================");
   Serial2 <<gloClear<<"Internet OD reader v" << VERSION << " ID: " << IODR_ID;
   //wdt_reset(); //not part of giga R1, reimplement later; all instances have been commented out and marked with "%%%"
+  watchdog.kick();
 
   // set up DS18B20 digital thermometer
   Serial.println("calling initTemp()");
@@ -369,7 +313,7 @@ void setup(void)
     // WiFi: Display IP address
     IPAddress ip = WiFi.localIP();
     Serial.print("IP = ");
-    Serial.println(WiFi.localIP());
+    Serial.println(ip);
     Serial2 << gloClear << "IP=" << ip[0] << "." << ip[1] << "." << ip[2] << "." << ip[3];
     Serial2 << gloReturn << "mac=N/A"; // GIGA WiFi library doesn't give MAC by default
   #else
@@ -383,12 +327,14 @@ void setup(void)
   Serial.println("     ***** Network initialized *****");
   //checkTiming();
   //wdt_reset(); //%%%
+  watchdog.kick();
   delay(3000); // delay so we can read the info on the OLED display
 
   Serial.println("Setup complete");
   Serial2 << gloClear;
   checkTiming();
   //wdt_reset();  //%%%
+  watchdog.kick();
 
   
 }
@@ -401,8 +347,10 @@ void setup(void)
 //------------------------------------------------------------------------
 //           MAIN PROGRAM LOOP
 //------------------------------------------------------------------------
-void loop(){
+void loop()
+{
   // Reset watchdog
+  watchdog.kick();
   //wdt_reset(); //%%%
   
   //digitalWrite(startMainLoopLED, HIGH);
@@ -414,9 +362,9 @@ void loop(){
   
   //display light sensor status on LCD
   if (displayTubeSummary){
-     displayTubeStatusSummary();
-     //Serial.println("     ***** displayTubeStatusSummary() *****");
-     //checkTiming();  
+    displayTubeStatusSummary();
+    //Serial.println("     ***** displayTubeStatusSummary() *****");
+    //checkTiming();  
   } 
   else {  
      displayTubeStatus(lastButtonPressed);
@@ -652,12 +600,12 @@ void displayTubeStatusSummary(){
   displayLine[2][15] = tempStr[2];
   displayLine[3][15] = tempStr[3];
 
-/*  
+  /*  
   Serial.println("\n*************** displayTubeStatusSummary() *****************");
   for (int i=0; i<4; i++){
     Serial.println(displayLine[i]);
   }
-*/  
+  */  
    //write the result to the OLED display
    Serial2 << gloHome;
    for (int i = 0; i<4; i++){
@@ -736,6 +684,7 @@ void uploadDataToThingspeak(){
   //Serial.println(odWriteResponse); %%% thingspeak
   //Serial2 << gloReturn << odWriteResponse; %%%thingspeak // send data to OLED display
   //wdt_reset(); //%%%
+  watchdog.kick(); 
 
   //send temperature data to thingspeak
   Serial.println("sending temperature data to thingspeak");
@@ -746,6 +695,7 @@ void uploadDataToThingspeak(){
   //send information to OLED display
   delay(1500); // enough time to read the display
   //wdt_reset(); //%%%
+  watchdog.kick();
 
   // %%%% thingspeak (whole block)
   // if (odWriteResponse == 200){ // 200 is the server response from Thingspeak indicating success
@@ -782,7 +732,7 @@ void uploadDataToThingspeak(){
 
 void readLightSensors(){
   // clear the lightIn value
-  for (int i = 0; i<numTubes; i++){
+  for (int i = 0; i < numTubes; i++){
    lightIn[i] = 0;
    ODvalue[i] = 0;
    //checkBlankButtons(); removed this in version 20 of the program to see if I can fix the software "freezing" bug.
@@ -793,22 +743,22 @@ void readLightSensors(){
     // this measures ambient light levels, which will later get subtracted from the reading
     digitalWrite(ledPin, LOW); //turn off LEDs
     delay(10); //it takes ~1ms for the light senor reading to stabilize after the LED has been turned off
-    for (int i = 0; i < numTubes; i++){
+    for (int i = 4; i < numTubes; i++){ // %%% skips first four tubes
       LEDoffReading[i] = analogRead(lightInPin[i]);      
     }
     // read light sensor values with the LED on
     digitalWrite(ledPin, HIGH); //turn on LEDs
     delay(10); //it takes ~1ms for the light senor reading to stabilize after the LED has been turned on
-    for (int i = 0; i < numTubes; i++){
+    for (int i = 4; i < numTubes; i++){ // %%% skips first four tubes
       LEDonReading[i] = analogRead(lightInPin[i]);      
     }   
     // calculate the difference and add it to lightIn
-    for (int i = 0; i < numTubes; i++){
+    for (int i = 4; i < numTubes; i++){ // %%% skips first four tubes
       lightIn[i] += (LEDonReading[i] - LEDoffReading[i]);
     } 
   }
   // divide lightIn by pointsToAverage to get the average value
-  for (int i = 0; i < numTubes; i++){
+  for (int i = 4; i < numTubes; i++){ // %%% skips first four tubes
       lightIn[i] = lightIn[i]/pointsToAverage;
       ODvalue[i] = -(log10(lightIn[i]/blankValue[i]));
   }
