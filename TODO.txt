@@ -23,3 +23,5 @@ Websites:
   https://www.geeksforgeeks.org/analogread-arduino-reference/
 - PCB .sch schematic diagram file opener
   https://www.altium365.com/viewer/
+- Arduino help forum
+  https://forum.arduino.cc/top?period=daily
