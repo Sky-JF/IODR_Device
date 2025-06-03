@@ -1,3 +1,4 @@
+- Determine why analogRead is being redirected from A8 to all other pins (A9, A10, A11)
 - Test connecting wires between analogue pins
 - Test voltage divider to determine if analogue pins are reading correctly -> use
 potentiometer to test voltage read by each pin
@@ -11,4 +12,9 @@ Later:
 - Integrate Flash memory/EEPROM
 
 Websites:
-- https://docs.arduino.cc/libraries/arduino_advancedanalog/
+- AdvancedANalogue
+  https://docs.arduino.cc/libraries/arduino_advancedanalog/
+- Analogue pin incorrect reading?
+  https://github.com/arduino/ArduinoCore-mbed/issues/758
+- analogRead references
+  https://www.geeksforgeeks.org/analogread-arduino-reference/
