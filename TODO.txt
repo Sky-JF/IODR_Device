@@ -21,3 +21,5 @@ Websites:
   https://github.com/arduino/ArduinoCore-mbed/issues/758
 - analogRead references
   https://www.geeksforgeeks.org/analogread-arduino-reference/
+- PCB .sch schematic diagram file opener
+  https://www.altium365.com/viewer/
