@@ -576,7 +576,7 @@ void displayTubeStatusSummary(){
     //loop through each character in odval and add it to the displayLine char array
     //add odval in first position (i.e. tubes 1, 2, 3 and 4)
     //dtostrf(ODvalue[i], 4, 2, odval); //%%% not in GIGA
-    sprintf(odval, "%4.2f", ODvalue[i]);
+    snprintf(odval, sizeof(odval), "%.2f", ODvalue[i]);
     //Serial << "   odval[" << i << "]=" << odval <<" length=" << sizeof(odval);
     
     for (int j = 0; j<sizeof(odval)-1; j++){ //sizeof(odval)-1 is to avoid including the "end of string" character
@@ -585,7 +585,7 @@ void displayTubeStatusSummary(){
     }
     //add odval in second position (i.e. tubes 5, 6, 7 and 8)
     //dtostrf(ODvalue[i+4], 4, 2, odval);  //%%% NOT in GIGA
-    sprintf(odval, "%4.2f", ODvalue[i+4]);
+    snprintf(odval, sizeof(odval), "%.2f", ODvalue[i+4]);
     //Serial << "   odval_2_[" << i << "]=" << odval <<" length=" << sizeof(odval);
     //Serial.println();
     for (int j = 0; j<sizeof(odval)-1; j++){
@@ -595,7 +595,7 @@ void displayTubeStatusSummary(){
 
   //add temperature value
   char tempStr[5] = "    ";
-  sprintf(tempStr, "%4.2f", temperature);
+  snprintf(tempStr, sizeof(tempStr), "%.2f", temperature);
   //dtostrf(temperature, 4,2, tempStr); %%% NOT in GIGA
   displayLine[0][15] = tempStr[0];
   displayLine[1][15] = tempStr[1];
@@ -631,7 +631,7 @@ void displayTubeStatus(int tubeNum){
   char botLine[] = "OD=     Raw=    ";
   
   //convert variables to strings of the appropriate length
-  sprintf(bval, "%4.2f", blankValue[tubeNum]);
+  snprintf(bval, sizeof(bval), "%.2f", blankValue[tubeNum]);
   //dtostrf(blankValue[tubeNum], 4, 0, bval); //%%% NOT in GIGA
   //Serial.println();
   //dtostrf(LEDonReading[lastButtonPressed], 4, 0, ltin); //use LEDonReading for the raw value.  
@@ -639,13 +639,13 @@ void displayTubeStatus(int tubeNum){
                                                           //Note that the raw value will show fluctuations due to ambient light, but the lightIn value (i.e. abient light subtracted)
                                                           //is what is being used to calculate the OD value
   //dtostrf(lightIn[tubeNum], 4, 0, ltin);  %%%NOT in GIGA      //use lightIn for raw value
-  sprintf(ltin, "%4.2f", lightIn[tubeNum]);
+  snprintf(ltin, sizeof(ltin), "%.2f", lightIn[tubeNum]);
   //  Serial <<"       ltin=" <<ltin;
   //Serial.println();
                                                           //not sure which I prefer, lightIn or LEDonReading, for raw value
                                                           //using lightIn for now
   //dtostrf(ODvalue[tubeNum], 4, 2, odval); %%% NOT IN giga
-  sprintf(odval, "%4.2f", ODvalue[tubeNum]);
+  snprintf(odval, sizeof(odval), "%.2f", ODvalue[tubeNum]);
   // Serial <<"       odval=" <<odval;
   //Serial.println();
 
