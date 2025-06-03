@@ -82,7 +82,6 @@ mbed::Watchdog &watchdog = mbed::Watchdog::get_instance();
 
   //double check these depending on network being connected 
   //byte mac[] = { 0x0E, 0x0E, 0x02, 0x02, 0x02, 0xA8 }; //mac address for IODR #4 %%%
-  //byte ip[] =      { 192, 168, 220, 214 }; //the IP address when connected to my personal network %%%
 #endif
 
 // Parameters for IODR #1
@@ -576,7 +575,8 @@ void displayTubeStatusSummary(){
   for (int i=0; i<4; i++){  
     //loop through each character in odval and add it to the displayLine char array
     //add odval in first position (i.e. tubes 1, 2, 3 and 4)
-    //dtostrf(ODvalue[i], 4, 2, odval); %%% thingspeak
+    //dtostrf(ODvalue[i], 4, 2, odval); //%%% not in GIGA
+    sprintf(odval, "%4.2f", ODvalue[i]);
     //Serial << "   odval[" << i << "]=" << odval <<" length=" << sizeof(odval);
     
     for (int j = 0; j<sizeof(odval)-1; j++){ //sizeof(odval)-1 is to avoid including the "end of string" character
@@ -584,7 +584,8 @@ void displayTubeStatusSummary(){
       //Serial << "        displayLine["<<i<<"]["<<j+2<<"]="<<odval[j];
     }
     //add odval in second position (i.e. tubes 5, 6, 7 and 8)
-    //dtostrf(ODvalue[i+4], 4, 2, odval);  %%% thingspeak
+    //dtostrf(ODvalue[i+4], 4, 2, odval);  //%%% NOT in GIGA
+    sprintf(odval, "%4.2f", ODvalue[i+4]);
     //Serial << "   odval_2_[" << i << "]=" << odval <<" length=" << sizeof(odval);
     //Serial.println();
     for (int j = 0; j<sizeof(odval)-1; j++){
@@ -593,8 +594,9 @@ void displayTubeStatusSummary(){
   }
 
   //add temperature value
-  char tempStr[4];
-  //dtostrf(temperature, 4,2, tempStr); %%% thingspeak
+  char tempStr[5] = "    ";
+  sprintf(tempStr, "%4.2f", temperature);
+  //dtostrf(temperature, 4,2, tempStr); %%% NOT in GIGA
   displayLine[0][15] = tempStr[0];
   displayLine[1][15] = tempStr[1];
   displayLine[2][15] = tempStr[2];
@@ -609,7 +611,8 @@ void displayTubeStatusSummary(){
    //write the result to the OLED display
    Serial2 << gloHome;
    for (int i = 0; i<4; i++){
-     Serial2 << displayLine[i];
+     Serial2 << displayLine[i]; //<< gloReturn;
+     //Serial.println(displayLine[i]);
    }
   
 }
@@ -628,18 +631,21 @@ void displayTubeStatus(int tubeNum){
   char botLine[] = "OD=     Raw=    ";
   
   //convert variables to strings of the appropriate length
-  //dtostrf(blankValue[tubeNum], 4, 0, bval); //%%% thingspeak
+  sprintf(bval, "%4.2f", blankValue[tubeNum]);
+  //dtostrf(blankValue[tubeNum], 4, 0, bval); //%%% NOT in GIGA
   //Serial.println();
   //dtostrf(LEDonReading[lastButtonPressed], 4, 0, ltin); //use LEDonReading for the raw value.  
                                                           //We want to be able to see how close we are to saturating the detector when we're adjusting the potentiometer.
                                                           //Note that the raw value will show fluctuations due to ambient light, but the lightIn value (i.e. abient light subtracted)
                                                           //is what is being used to calculate the OD value
-  //dtostrf(lightIn[tubeNum], 4, 0, ltin);  %%%thingspeak      //use lightIn for raw value
+  //dtostrf(lightIn[tubeNum], 4, 0, ltin);  %%%NOT in GIGA      //use lightIn for raw value
+  sprintf(ltin, "%4.2f", lightIn[tubeNum]);
   //  Serial <<"       ltin=" <<ltin;
   //Serial.println();
                                                           //not sure which I prefer, lightIn or LEDonReading, for raw value
                                                           //using lightIn for now
-  //dtostrf(ODvalue[tubeNum], 4, 2, odval); %%%thingspeak
+  //dtostrf(ODvalue[tubeNum], 4, 2, odval); %%% NOT IN giga
+  sprintf(odval, "%4.2f", ODvalue[tubeNum]);
   // Serial <<"       odval=" <<odval;
   //Serial.println();
 
