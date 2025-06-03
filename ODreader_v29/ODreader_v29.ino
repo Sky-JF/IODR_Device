@@ -204,8 +204,7 @@ byte dnsServer[] =     { 129, 170, 64, 43 }; //the DNS server address for both I
 //------------------------------------------------------------------------
 //           SETUP
 //------------------------------------------------------------------------
-void setup(void)
-{
+void setup(void) {
   //enable the watchdog timer at the beginning of the setup loop
   //if the program hangs for more than 8 seconds, the arduino will be reset
   //when the program is functioning correctly, the watchdog timer needs to be reset more frequently than every 8 seconds
@@ -346,8 +345,7 @@ void setup(void)
 //------------------------------------------------------------------------
 //           MAIN PROGRAM LOOP
 //------------------------------------------------------------------------
-void loop()
-{
+void loop() {
   // Reset watchdog
   watchdog.kick();
   //wdt_reset(); //%%%
@@ -422,7 +420,7 @@ void loop()
 //8 2-byte values get stored
 //address 0 and 1 store the first blank value
 //address 2 and 3 store the second blank value
-void writeBlankToEEPROM (int tubeIndex){
+void writeBlankToEEPROM (int tubeIndex) {
   Serial << "******************* writeBlankToEEPROM() ******************";
   Serial.print("\nWriting blank value for tube ");
   Serial.print(tubeIndex);
@@ -438,7 +436,7 @@ void writeBlankToEEPROM (int tubeIndex){
 
 
 //read blank value from EEPROM
-void readBlankFromEEPROM (int tubeIndex){
+void readBlankFromEEPROM (int tubeIndex) {
   Serial << "************************** readBlankFromEEPROM() **************************************";
   Serial.print("\nReading blank value for tube ");
   Serial.print(tubeIndex);
@@ -453,7 +451,7 @@ void readBlankFromEEPROM (int tubeIndex){
 
 
 //subroutine for checking the timing of a portion of a loop
-void checkTiming(){
+void checkTiming() {
   Serial.print("***checkTiming()*** loop time=");
   Serial.print(millis()-lastLoopTime);
   lastLoopTime = millis();
@@ -464,7 +462,7 @@ void checkTiming(){
 
 // check the state of the reset buttons. keep track of which button was most recently pressed.  
 // if a button is pressed and held for a certain amount of time (>2 seconds), then reset the blank value for that well
-void checkBlankButtons(){
+void checkBlankButtons() {
      //Serial << "\n$$$$$$$$$$$ checkBlankButtons() $$$$$$$$$$$$$$$$$";
      for (int i=0; i<numTubes; i++){
       //in v2 of the IODR shield, I accidentally wired the reset buttons to give digital 0 when pressed instead of 
@@ -508,7 +506,7 @@ void checkBlankButtons(){
 
 
 // display the state of each pushbutton used to blank the tube reader
-void blankButtonStatusDisplay(){
+void blankButtonStatusDisplay() {
   //Serial << "*************** blankButtonStatusDisplay() ***********************";
   Serial.print("Blank Button State: ");
   for (int i=0; i<numTubes; i++){
@@ -522,7 +520,7 @@ void blankButtonStatusDisplay(){
 
 
 //print the state of the light and temperature sensors to the serial monitor for debugging purposes
-void serialPrintState(){  
+void serialPrintState() {  
   Serial << "\n**************** serialPrintState() ******************";
   Serial <<"\nLEDoffReading[]\t LEDonReading[]\t lightIn[]\t ODvalue[]\t blankValue";
   for (int i=0; i<numTubes; i++){
@@ -547,7 +545,7 @@ void serialPrintState(){
 
 
 //display a message on the LCD saying that one tube blank value was reset
-void displayTubeReset(int tubeNum){
+void displayTubeReset(int tubeNum) {
   Serial2 << gloClear << "Tube: " << tubeNum + 1; //tubNum index starts at 0, so increment by one for human-readable display
   Serial2 << gloReturn << "Was reset" ;
   
@@ -561,7 +559,7 @@ void displayTubeReset(int tubeNum){
 
 // Summary Display
 // display current OD for all tubes on OLED display
-void displayTubeStatusSummary(){
+void displayTubeStatusSummary() {
   //Serial.println("*************************************");
   //Serial.println("displayTubeStatusSummary()");
   char displayLine[4][17] = {
@@ -621,7 +619,7 @@ void displayTubeStatusSummary(){
 
 
 // display current OD, raw light sensor value and blank value on serial LCD
-void displayTubeStatus(int tubeNum){
+void displayTubeStatus(int tubeNum) {
   //Serial << "\n************** displayTubeStatus() ******************* tubeNum=" << tubeNum;
 
   char bval[15]; //note: if these character arrays are too short, they can overwrite each other
@@ -631,7 +629,7 @@ void displayTubeStatus(int tubeNum){
   char botLine[] = "OD=     Raw=    ";
   
   //convert variables to strings of the appropriate length
-    snprintf(bval, sizeof(bval), "%.2f", blankValue[tubeNum]);
+  snprintf(bval, sizeof(bval), "%.2f", blankValue[tubeNum]);
   //dtostrf(blankValue[tubeNum], 4, 0, bval); //%%% NOT in GIGA
   //Serial.println();
   //dtostrf(LEDonReading[lastButtonPressed], 4, 0, ltin); //use LEDonReading for the raw value.  
@@ -675,7 +673,7 @@ void displayTubeStatus(int tubeNum){
 //OD_API_KEY
 //TEMP_CHANNEL_ID
 //TEMP_API_KEY
-void uploadDataToThingspeak(){
+void uploadDataToThingspeak() {
   // send information to OLED display
   Serial2 << gloClear << "Sending data to Thingspeak...";
   
@@ -736,7 +734,7 @@ void uploadDataToThingspeak(){
 }
 
 
-void readLightSensors(){
+void readLightSensors() {
   // clear the lightIn value
   for (int i = 0; i < numTubes; i++){
    lightIn[i] = 0;
@@ -775,7 +773,7 @@ void readLightSensors(){
 
 // ******************* TEMPERATURE SENSOR SUBROUTINES **********************************
 //initialize DS18B20 temperature sensor
-boolean initTemp(){
+boolean initTemp() {
   Serial.println("^^^initTemp()^^^");
   boolean deviceFound;
   int numTries = 4;
@@ -810,7 +808,7 @@ boolean initTemp(){
 //returns the temperature from one DS18S20 in DEG Celsius
 //only works with one DS18S20
 //note, this was rewritten in version 23
-float getTemp(){
+float getTemp() {
   float tempC;
   //Serial.println("^^^getTemp()^^^");
   if (temperatureDeviceFound){
