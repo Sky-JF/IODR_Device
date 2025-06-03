@@ -5,6 +5,9 @@ potentiometer to test voltage read by each pin
 - Adjust resolution of analogue reads
 - Advanced analogue library?
 
+Summer:
+- Divide one big file into smaller files
+  - Make a unit test for major functions
 
 Later:
 - Integrate Thingspeak
