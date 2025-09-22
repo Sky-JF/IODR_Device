@@ -3,10 +3,8 @@
 - Test connecting wires between analogue pins
 - Test voltage divider to determine if analogue pins are reading correctly -> use
 potentiometer to test voltage read by each pin
-- Adjust resolution of analogue reads
 - Advanced analogue library?
 
-Summer:
 - Divide one big file into smaller files
   - Make a unit test for major functions
 
@@ -20,9 +18,14 @@ Websites:
   https://docs.arduino.cc/libraries/arduino_advancedanalog/
 - Analogue pin incorrect reading?
   https://github.com/arduino/ArduinoCore-mbed/issues/758
-- analogRead references
-  https://www.geeksforgeeks.org/analogread-arduino-reference/
 - PCB .sch schematic diagram file opener
   https://www.altium365.com/viewer/
 - Arduino help forum
   https://forum.arduino.cc/top?period=daily
+- Divide arduino code (functions with variables declared on the previous files can be sued
+in later files)
+  https://arduino.stackexchange.com/questions/60656/split-up-arduino-code-into-multiple-files-using-arduino-ide
+
+- analogRead references (DONE)
+  https://www.geeksforgeeks.org/analogread-arduino-reference/
+
