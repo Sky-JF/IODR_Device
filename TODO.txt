@@ -1,17 +1,20 @@
-- Map out which pins connect to which components
-- Determine why analogRead is being redirected from A8 to all other pins (A9, A10, A11)
-- Test connecting wires between analogue pins
-- Test voltage divider to determine if analogue pins are reading correctly -> use
-potentiometer to test voltage read by each pin
-- Advanced analogue library?
+- Map out which pins connect to which components (done)
+- Determine why analogRead is being redirected from A8 to all other pins (A9, A10, A11) (done, this is due to PureAnalogPin being interpreted incorrectly by mbed os)
+- Test connecting wires between analogue pins (done, works)
+- Test voltage divider to determine if analogue pins are reading correctly (done, connected properly)
+- Advanced analogue library? (no need atm)
+to fix issues with the analog read, either all pins will need to be hardcoded outside an array, or the correct object type for these analog pin constants will need to be found
 
-- Divide one big file into smaller files
-  - Make a unit test for major functions
+Ongoing:
+- Integrate Thingspeak
 
 Later:
-- Integrate Thingspeak
+- Divide one big file into smaller files
+  - Make a unit test for major functions
 - Integrate InfluxDB
 - Integrate Flash memory/EEPROM
+
+
 
 Websites:
 - AdvancedANalogue
