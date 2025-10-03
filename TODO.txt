@@ -4,16 +4,20 @@
 - Test voltage divider to determine if analogue pins are reading correctly (done, connected properly)
 - Advanced analogue library? (no need atm)
 to fix issues with the analog read, either all pins will need to be hardcoded outside an array, or the correct object type for these analog pin constants will need to be found
+- Integrate Thingspeak (done, used get request to send data)
 
 Ongoing:
-- Integrate Thingspeak
+- Test Simple.ino and oneWireSearch.ino for the temperature sensor
+- Create a channel for documenting error codes. Then, use this reference to diagnose the
+upload error
+  https://www.mathworks.com/help/thingspeak/error-codes.html
+
 
 Later:
-- Divide one big file into smaller files
-  - Make a unit test for major functions
+- Make a unit test for major functions
 - Integrate InfluxDB
 - Integrate Flash memory/EEPROM
-
+- Integrate watchdog timer (reset if wifi is unable to connect after some time)
 
 
 Websites:
