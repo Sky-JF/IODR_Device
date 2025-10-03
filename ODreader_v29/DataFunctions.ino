@@ -275,7 +275,7 @@ void uploadDataToThingspeak() {
   int odStatusCode = client.responseStatusCode();
   Serial.print("OD upload status code: ");
   Serial.println(odStatusCode);
-  Serial2 << gloReturn << "OD response: " + odStatusCode; // send response to OLED display
+  Serial2 << gloReturn << "OD code: " + odStatusCode; // send response to OLED display
   //wdt_reset(); //%%%
   //watchdog.kick(); 
 
@@ -294,7 +294,7 @@ void uploadDataToThingspeak() {
   int tempStatusCode = client.responseStatusCode();
   Serial.print("Temp upload status code: ");
   Serial.println(tempStatusCode);
-  Serial2 << gloReturn << "Temp response: " + tempStatusCode; // send response to OLED display
+  Serial2 << gloReturn << "Temp code: " + tempStatusCode; // send response to OLED display
   delay(1500); // enough time to read the display
   //wdt_reset(); //%%%
   //watchdog.kick();
