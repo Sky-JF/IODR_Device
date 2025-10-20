@@ -5,14 +5,15 @@
 - Advanced analogue library? (no need atm)
 to fix issues with the analog read, either all pins will need to be hardcoded outside an array, or the correct object type for these analog pin constants will need to be found
 - Integrate Thingspeak (done, used get request to send data)
+- Fix temperature sensor readings
 
 Ongoing:
-- Test Simple.ino and oneWireSearch.ino for the temperature sensor
 - Create a channel for documenting error codes. Then, use this reference to diagnose the
 upload error
   https://www.mathworks.com/help/thingspeak/error-codes.html
 - Thingspeak upload error (code -4). Either the httpClient can't parse the http request
-the thingspeak API returned, or the API is returning a nonesense request.  
+the thingspeak API returned, or the API is returning a nonesense request. 
+      - Make library send infor on the reponse  
 
 
 Later:

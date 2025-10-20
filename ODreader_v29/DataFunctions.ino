@@ -397,6 +397,9 @@ boolean initTemp() {
   boolean deviceFound;
   int numTries = 4;
   
+  // Start up library
+  sensors.begin();
+  
   //find the first device on the bus (i.e. at index = 0)
   for (int i = 0; i < numTries; i++){
     deviceFound = sensors.getAddress(tempSensor, 0);

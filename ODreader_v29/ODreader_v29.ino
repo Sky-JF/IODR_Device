@@ -79,7 +79,7 @@ A15: pin 82, light sensor for tube 1 (new pin is A7)
   // TEMP_API_KEY
   #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
   #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
-  #define TEMP_SENSE_PIN 44 // Is this correct pin ??? check
+  #define TEMP_SENSE_PIN 8 // Internal temperature sensor (try pin 44 for external)
 
   #define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 #endif
@@ -95,7 +95,7 @@ A15: pin 82, light sensor for tube 1 (new pin is A7)
   #define TEMP_API_KEY "C509JHJCZNRGDNRE" //write API key
   #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
   #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
-  #define TEMP_SENSE_PIN 44
+  #define TEMP_SENSE_PIN 44 
 
   // Network parameters for IODR #1
   byte mac[] = { 0xA8, 0x61, 0x0A, 0xAE, 0x3F, 0xBC }; //mac address for IODR #1 new ethernet shield W5500
@@ -309,7 +309,7 @@ void loop()
     lastODReadTime = millis();
     
     //send light sensor, temp and blank button information to serial terminal for debugging purposes
-    serialPrintState();
+    //serialPrintState(); // %%%**** Deactivate temporarily to diagnose thingspeak errors
     //blankButtonStatusDisplay();
   }
 
