@@ -79,7 +79,7 @@ A15: pin 82, light sensor for tube 1 (new pin is A7)
   // TEMP_API_KEY
   #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
   #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
-  #define TEMP_SENSE_PIN 8 // Internal temperature sensor (try pin 44 for external)
+  #define TEMP_SENSE_PIN 44 // Pin 44 for external temperature sensor; pin 8 for internal
 
   #define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 #endif
@@ -224,7 +224,7 @@ void setup(void) {
   //gloSoftSerialBegin( myOLED ) ;
   Serial2.begin(9600); // Serial port for printing to the LCD
   Serial2 << gloClear << gloFont_1w1h ;
-  delay(500); // wait for lcd display to boot up
+  delay(1000); // wait for lcd display to boot up
 
   //announce version information
   Serial.begin(115200); //serial port for debugging set to 115200 baud

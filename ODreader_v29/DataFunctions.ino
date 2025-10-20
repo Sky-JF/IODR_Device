@@ -271,10 +271,14 @@ void uploadDataToThingspeak() {
   Serial.println("sending OD data to thingspeak");
   client.get(path);
 
+  delay(1000); // test rate_limits *** %%%
+
   // Server response from OD upload attempt
   int odStatusCode = client.responseStatusCode();
   Serial.print("OD upload status code: ");
   Serial.println(odStatusCode);
+  Serial.println(client.responseBody());
+  //readRawHttp(); // *** %%% try to get raw http if want to debug more
   Serial2 << gloReturn << "OD code: " + odStatusCode; // send response to OLED display
   //wdt_reset(); //%%%
   //watchdog.kick(); 
@@ -294,6 +298,8 @@ void uploadDataToThingspeak() {
   int tempStatusCode = client.responseStatusCode();
   Serial.print("Temp upload status code: ");
   Serial.println(tempStatusCode);
+  //readRawHttp(); // *** %%% try to get raw http if want to debug more
+  Serial.println(client.responseBody());
   Serial2 << gloReturn << "Temp code: " + tempStatusCode; // send response to OLED display
   delay(1500); // enough time to read the display
   //wdt_reset(); //%%%
@@ -326,6 +332,14 @@ void uploadDataToThingspeak() {
     Serial2 << gloClear << "Upload error: waiting to reset..."; 
     //digitalWrite(wdTimer, LOW); // turn off the upload light to allow the watchdog timer to reset %%% not using wdTimer
     delay(400000); // delay 6 minutes, should trigger watchdog timer to reset
+  }
+}
+
+// *** %%% remove this function if not necessary
+void readRawHttp() {
+  while (client.available()) {
+    char c = client.read();
+    Serial.println(c);
   }
 }
 
@@ -399,7 +413,7 @@ boolean initTemp() {
   
   // Start up library
   sensors.begin();
-  
+
   //find the first device on the bus (i.e. at index = 0)
   for (int i = 0; i < numTries; i++){
     deviceFound = sensors.getAddress(tempSensor, 0);

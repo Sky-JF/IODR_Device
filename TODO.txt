@@ -13,7 +13,19 @@ upload error
   https://www.mathworks.com/help/thingspeak/error-codes.html
 - Thingspeak upload error (code -4). Either the httpClient can't parse the http request
 the thingspeak API returned, or the API is returning a nonesense request. 
-      - Make library send infor on the reponse  
+      - Make library send infor on the reponse
+-Things to try
+    - Increase timeouts: httpClient.setHttpResponseTimeout(10000);  // default is ~5000 ms
+(did not work)
+    - Close previous connection before new upload
+        httpClient.stop();
+        delay(50);
+    - Malformed HTTP header: try printing raw response
+    - Test wifi instability: reinitiate wifi if a request fails
+    - check thingspeak rate limit
+
+    - For some reason, printing the responseBody improves consistency????
+
 
 
 Later:
