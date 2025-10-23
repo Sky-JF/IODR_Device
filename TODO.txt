@@ -8,23 +8,28 @@ to fix issues with the analog read, either all pins will need to be hardcoded ou
 - Fix temperature sensor readings
 
 Ongoing:
-- Create a channel for documenting error codes. Then, use this reference to diagnose the
-upload error
-  https://www.mathworks.com/help/thingspeak/error-codes.html
-- Thingspeak upload error (code -4). Either the httpClient can't parse the http request
-the thingspeak API returned, or the API is returning a nonesense request. 
-      - Make library send infor on the reponse
 -Things to try
     - Increase timeouts: httpClient.setHttpResponseTimeout(10000);  // default is ~5000 ms
 (did not work)
+
     - Close previous connection before new upload
         httpClient.stop();
         delay(50);
+              - Seems like the wifi socket being used by the http connection was being
+overused over time. To mitigate this, the socket connection is closed and opened again.  
+
     - Malformed HTTP header: try printing raw response
-    - Test wifi instability: reinitiate wifi if a request fails
     - check thingspeak rate limit
 
     - For some reason, printing the responseBody improves consistency????
+        - New upload error code of -3 --> Connection timed out 
+          After several successful submissions, all connections start timing out
+    - KEEP IT RUNNING
+    - Email thingspeak asking about server overload error message
+    - Try wifi client without secure connection
+          - Wifi web client
+
+    - Improved requests by sending each request through different socket connections
 
 
 
@@ -51,3 +56,4 @@ in later files)
 - analogRead references (DONE)
   https://www.geeksforgeeks.org/analogread-arduino-reference/
 
+- Error codes: https://www.mathworks.com/help/thingspeak/error-codes.html

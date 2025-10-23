@@ -69,7 +69,7 @@ A15: pin 82, light sensor for tube 1 (new pin is A7)
 
   WiFiSSLClient wifiClient;  //used to upload to thingspeak
   const char* server = "api.thingspeak.com";
-  #define PORT 443 //post used by the WiFiSSLClient to send through http
+  #define PORT 443 //post used by the WiFiSSLClient to send through http (try 80 for HTTP request for WifiWebClient)
   HttpClient client = HttpClient(wifiClient, server, PORT);
 
   #define OD_CHANNEL_ID 2926522

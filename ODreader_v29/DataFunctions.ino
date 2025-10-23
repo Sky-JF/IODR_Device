@@ -269,19 +269,23 @@ void uploadDataToThingspeak() {
   
   // send OD data to thingspeak
   Serial.println("sending OD data to thingspeak");
+  client.beginRequest(); // start connection
   client.get(path);
-
-  delay(1000); // test rate_limits *** %%%
+  client.endRequest();
+  delay(100); // allow response to be received by client
 
   // Server response from OD upload attempt
   int odStatusCode = client.responseStatusCode();
   Serial.print("OD upload status code: ");
   Serial.println(odStatusCode);
-  Serial.println(client.responseBody());
+  Serial.println("Http response body: " + client.responseBody());
   //readRawHttp(); // *** %%% try to get raw http if want to debug more
-  Serial2 << gloReturn << "OD code: " + odStatusCode; // send response to OLED display
+  Serial2 << gloClear << "OD code: " << odStatusCode; // send response to OLED display
   //wdt_reset(); //%%%
   //watchdog.kick(); 
+  client.stop(); // end use of this socket since Thingspeak ends connection to socket 
+
+  delay(1000); // test rate_limits, this seems to improve connectivity *** %%%
 
   //send temperature data to thingspeak
   Serial.println("sending temperature data to thingspeak");
@@ -292,18 +296,22 @@ void uploadDataToThingspeak() {
 
   // send temp data to thingspeak
   Serial.println("sending temperature data to thingspeak");
+  client.beginRequest(); //create a new socket
   client.get(path);
+  client.endRequest();
+  delay(100); // allow response to be received by client
 
   // Server response from temperature upload attempt
   int tempStatusCode = client.responseStatusCode();
   Serial.print("Temp upload status code: ");
   Serial.println(tempStatusCode);
   //readRawHttp(); // *** %%% try to get raw http if want to debug more
-  Serial.println(client.responseBody());
-  Serial2 << gloReturn << "Temp code: " + tempStatusCode; // send response to OLED display
-  delay(1500); // enough time to read the display
+  Serial.println("Http response body: " + client.responseBody());
+  Serial2 << gloReturn << "Temp code: " << tempStatusCode; // send response to OLED display
+  delay(5000); // enough time to read the display
   //wdt_reset(); //%%%
   //watchdog.kick();
+  client.stop(); // close again
 
   if (odStatusCode == 200){ // 200 is the server response from Thingspeak indicating success
     numFailedUploads = 0;
@@ -311,6 +319,9 @@ void uploadDataToThingspeak() {
     Serial.println("numFailedUploads reset");
     delay(500);
     //digitalWrite(wdTimer, LOW);
+    if (client.responseBody() == "0") {
+     Serial.println("ThingSpeak rejected update of OD data (improper get request formatting)");
+    }
   }
   else{
     numFailedUploads += 1;
@@ -322,16 +333,20 @@ void uploadDataToThingspeak() {
     }
     // try to reset the network connection and re-connect to thingspeak
     //Ethernet.begin(mac, ip, dnsServer, gateway, subnet); // try to connect to the network with fixed IP address; commented out for giga
-    WiFi.disconnect(); // disconnect from wifi
-    connectToWifi(); // try to reconnect
-    delay(1500); // allow time to read the display
+    delay(3000); // allow time to read the display
   }
 
   // this if block should be unnecessary, since the watchdog timer will reset after 5 minutes with no successful upload (i.e. about 5 failed tries)
   if (numFailedUploads > MAX_FAILED_UPLOADS){
     Serial2 << gloClear << "Upload error: waiting to reset..."; 
+
+    // try reconnecting client and wifi
+    WiFi.disconnect(); // disconnect from wifi
+    connectToWifi(); // try to reconnect
+
+    delay(10000); // wait for stable wifi connection
     //digitalWrite(wdTimer, LOW); // turn off the upload light to allow the watchdog timer to reset %%% not using wdTimer
-    delay(400000); // delay 6 minutes, should trigger watchdog timer to reset
+    //delay(400000); // delay 6 minutes, should trigger watchdog timer to reset
   }
 }
 
