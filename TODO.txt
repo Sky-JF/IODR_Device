@@ -19,17 +19,16 @@ Ongoing:
 overused over time. To mitigate this, the socket connection is closed and opened again.  
 
     - Malformed HTTP header: try printing raw response
-    - check thingspeak rate limit
 
     - For some reason, printing the responseBody improves consistency????
-        - New upload error code of -3 --> Connection timed out 
-          After several successful submissions, all connections start timing out
-    - KEEP IT RUNNING
     - Email thingspeak asking about server overload error message
-    - Try wifi client without secure connection
-          - Wifi web client
 
     - Improved requests by sending each request through different socket connections
+    - Figure out why the code hangs a little after resetting the number of resets
+
+  - Out-of-memory crashes may occur because of string concatenation use instead of
+snprintf()
+  - See if tube status shows blank as an int
 
 
 

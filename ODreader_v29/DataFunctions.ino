@@ -211,7 +211,7 @@ void displayTubeStatus(int tubeNum) {
   char botLine[] = "OD=     Raw=    ";
   
   //convert variables to strings of the appropriate length
-  snprintf(bval, sizeof(bval), "%.2f", blankValue[tubeNum]);
+  snprintf(bval, sizeof(bval), "%d", blankValue[tubeNum]);
   //dtostrf(blankValue[tubeNum], 4, 0, bval); //%!%% NOT in GIGA
   //Serial.println();
   //dtostrf(LEDonReading[lastButtonPressed], 4, 0, ltin); //use LEDonReading for the raw value.  
