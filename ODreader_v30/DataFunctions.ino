@@ -1,33 +1,28 @@
-//write blank value to EEPROM
-//8 2-byte values get stored
+// Keys for gettig and setting the blank values in the KVStore API
+const char* blankTubeKeys[] = {"/kv/TubeBlank1", "/kv/TubeBlank2", "/kv/TubeBlank3", "/kv/TubeBlank4", "/kv/TubeBlank5", "/kv/TubeBlank6", "/kv/TubeBlank7", "/kv/TubeBlank8"};
+
+//write blank value to KVStore
+//8 4-byte (sizeof(int)) values get stored 
 //address 0 and 1 store the first blank value
 //address 2 and 3 store the second blank value
-void writeBlankToEEPROM (int tubeIndex) {
+// KVStore references: https://os.mbed.com/docs/mbed-os/v6.12/apis/kvstore.html
+void writeBlankToKVStore(int tubeIndex) {
   Serial << "******************* writeBlankToEEPROM() ******************";
   Serial.print("\nWriting blank value for tube ");
   Serial.print(tubeIndex);
-  Serial.println(" from EEPROM");
+  Serial.println(" into KVStore");
   int value = blankValue[tubeIndex];
-  byte h = highByte(value);
-  byte l = lowByte(value);
-  //EEPROM.write(tubeIndex*2, h);  //store the high byte in the first address %%%
-  //EEPROM.write(tubeIndex*2+1, l); //store the low byte in the second address %%%
-  // perhaps add EEPROM.commit(); if flashstorage
+  kv_set(blankTubeKeys[tubeIndex], &value, sizeof(value), 0); // last parameter set to 0 
 }
 
-
-
 //read blank value from EEPROM
-void readBlankFromEEPROM (int tubeIndex) {
+void readBlankFromKVStore(int tubeIndex) {
   Serial << "************************** readBlankFromEEPROM() **************************************";
   Serial.print("\nReading blank value for tube ");
   Serial.print(tubeIndex);
-  Serial.println(" from EEPROM");
-  word value;
-  //byte h = EEPROM.read(tubeIndex*2); //read low byte from EEPROM %%%
-  //byte l = EEPROM.read(tubeIndex*2+1); //read high byte from EEPROM %%%
-  //value = word(h,l); %%%
-  blankValue[tubeIndex] = (int)value; //cast value to an integer and store the result in the blankValue array
+  Serial.println(" from KVStore");
+  size_t actualSize; // number of bytes returned from KVStore
+  kv_get(blankTubeKeys[tubeIndex], &blankValue[tubeIndex], sizeof(blankValue[tubeIndex]), &actualSize);
 }
 
 
@@ -71,7 +66,7 @@ void checkBlankButtons() {
     if (blankButtonState[i] > NUM_CYCLES_TO_RESET) {
       blankValue[i] = (int)lightIn[i]; // reset blankValue for tube i
       Serial << "blankButtonState[" << i << "]=" << blankValue[i];
-      //writeBlankToEEPROM(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility %%%
+      writeBlankToKVStore(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility %%%
       displayTubeReset(i); // write a message to the serial LCD saying the tube was reset
       blankButtonState[i] = 0; // reset the blank button state
     }

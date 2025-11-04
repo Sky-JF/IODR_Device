@@ -40,18 +40,13 @@ A15: pin 82, light sensor for tube 1 (new pin is A7)
 // Libraries
 #include <stdlib.h>
 #include <SPI.h> //communication with wifi or ethernet shield
-//#include <avr/wdt.h> //for watchdog timer; not included in giga boards %%%
 #include <OneWire.h> //for temperature sensor
 #include <DallasTemperature.h> //for temperature sensor
 #include <Math.h>
-//#include <SoftwareSerial.h> //for serial LCD communication; Not usable with Giga 
-//#include "GigaCompatibility.h" // modified ThingSpeak library
-//#include <EEPROM.h> //used to store blank values so they persist between resets; used with Arduino mega boards %%%
-// #include <FlashStorage.h> //used to store blank values so they persist between resets; used with Arduino giga boards %%%
-// #include <FlashAsEEPROM.h> // might not work %%%
 #include <gloSerialOLED.h> //for OLED character display 
-//gloStreamingTemplate //allows carat notation for OLED display
 #include "mbed.h" // watchdog timer
+#include "KVStore.h"
+#include "kvstore_global_api.h"
 #include "secrets.h" // Include secrects (wifi passwords and API keys)
 
 
@@ -191,6 +186,7 @@ byte dnsServer[] =     { 129, 170, 64, 43 }; //the DNS server address for both I
 //           SETUP
 //------------------------------------------------------------------------
 void setup(void) {
+  Serial.begin(115200); //serial port for debugging set to 115200 baud
   delay(1000); // Give time for the serial port to connect
 
   analogReadResolution(ADC_12_BITS); // Use 12-bit resolution for the analogRead() function
@@ -211,7 +207,6 @@ void setup(void) {
   delay(1000); // wait for lcd display to boot up
 
   //announce version information
-  Serial.begin(115200); //serial port for debugging set to 115200 baud
   Serial.print("Internet OD reader v");
   Serial.println(VERSION);
   Serial.println("==========================");
@@ -228,7 +223,7 @@ void setup(void) {
   //read blankValues from EEPROM and store in blankValue integer array
   //these values are saved between resets
   for (int i=0; i < numTubes; i++){
-    //readBlankFromEEPROM(i); //not compatible with giga R1 board; all instances commented out with "%%%"
+    readBlankFromKVStore(i); //not compatible with giga R1 board; all instances commented out with "%%%"
   }
 
   //set up I/O pins
