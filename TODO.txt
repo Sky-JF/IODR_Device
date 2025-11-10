@@ -7,7 +7,6 @@ to fix issues with the analog read, either all pins will need to be hardcoded ou
 - Integrate Thingspeak (done, used get request to send data)
 - Fix temperature sensor readings
 
-Ongoing:
 -Things to try
     - Increase timeouts: httpClient.setHttpResponseTimeout(10000);  // default is ~5000 ms
 (did not work)
@@ -20,23 +19,20 @@ overused over time. To mitigate this, the socket connection is closed and opened
 
     - Malformed HTTP header: try printing raw response
 
-    - For some reason, printing the responseBody improves consistency????
     - Email thingspeak asking about server overload error message
 
     - Improved requests by sending each request through different socket connections
-    - Figure out why the code hangs a little after resetting the number of resets
 
+Ongoing:
   - Out-of-memory crashes may occur because of string concatenation use instead of
 snprintf()
-  - See if tube status shows blank as an int
+  - Implement over-the-air uploads
 
 
 
 Later:
 - Make a unit test for major functions
 - Integrate InfluxDB
-- Integrate Flash memory/EEPROM
-- Integrate watchdog timer (reset if wifi is unable to connect after some time)
 
 
 Websites:
