@@ -1,5 +1,8 @@
 # Arduino Ethernet Sensor Project
 
+Arduino Giga R1 
+**Update README**
+
 This project uses an Arduino with an Ethernet shield to collect and transmit sensor data over the internet. It is designed to be an efficient way to monitor growth of bacterial cultures remotely.
 
 ## Features
