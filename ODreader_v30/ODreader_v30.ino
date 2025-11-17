@@ -21,21 +21,21 @@ Ethernet shield connected to SPI bus (using SPI header instead of dedicated pins
 
 53: necessary to set this pin as output to allow ethernet shield to work
 20-34 (even numbered pins): blank reset buttons
-A8: pin 89, light sensor for tube 8 (new pin is A0)
-A9: pin 88, light sensor for tube 7 (new pin is A1)
-A10: pin 87, light sensor for tube 6 (new pin is A2)
-A11: pin 86, light sensor for tube 5 (new pin is A3)
-A12: pin 85, light sensor for tube 4 (new pin is A4)
-A13: pin 84, light sensor for tube 3 (new pin is A5)
-A14: pin 83, light sensor for tube 2 (new pin is A6)
-A15: pin 82, light sensor for tube 1 (new pin is A7)
+A0: light sensor for tube 8 (old pin is A8)
+A1: light sensor for tube 7 (old pin is A9)
+A2: light sensor for tube 6 (old pin is A10)
+A3: light sensor for tube 5 (old pin is A11)
+A4: light sensor for tube 4 (old pin is A12)
+A5: light sensor for tube 3 (old pin is A13)
+A6: light sensor for tube 2 (old pin is A14)
+A7: light sensor for tube 1 (old pin is A15)
 */
 
 //software version
 #define VERSION 30
 
 // hardware ID
-#define IODR_ID 1
+#define IODR_ID 3
 
 // Libraries
 #include <stdlib.h>
@@ -48,77 +48,59 @@ A15: pin 82, light sensor for tube 1 (new pin is A7)
 #include "KVStore.h"
 #include "kvstore_global_api.h"
 #include "secrets.h" // Include secrects (wifi passwords and API keys)
+#include <WiFi.h> //for Arduino Giga board wifi connection
+#include <WiFiClient.h>
+#include <ArduinoHttpClient.h>
 
+template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; } // allow operator << to print strings to OLED
+
+#define WATCHDOG_TIMEOUT 30000  // 30 second timeout
+mbed::Watchdog &watchdog = mbed::Watchdog::get_instance(); // watchdog object for resetting 
+
+// Login details for Wifi Network from secrets.h
+char ssid[] = DARTMOUTH_PUBLIC_SSID;        // your network SSID (name)
+char pass[] = DARTMOUTH_PUBLIC_PASS;    // your network password (use for WPA, or use as key for WEP)
+
+WiFiSSLClient wifiClient;  //used to upload to thingspeak
+const char* server = "api.thingspeak.com";
+#define PORT 443 //post used by the WiFiSSLClient to send through http (try 80 for HTTP request for WifiWebClient)
+HttpClient client = HttpClient(wifiClient, server, PORT);
+
+#define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 
 //Parameters for IODR #1 with Arduino Giga R1
-#if IODR_ID == 1
-  #include <WiFi.h> //for Arduino Giga board wifi connection
-  #include <WiFiClient.h>
-  #include <ArduinoHttpClient.h>
-
-  template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; } // allow operator << to print strings to OLED
-  
-  #define WATCHDOG_TIMEOUT 30000  // 30 second timeout
-  mbed::Watchdog &watchdog = mbed::Watchdog::get_instance(); // watchdog object for resetting 
-
-  // Login details for Wifi Network from secrets.h
-  char ssid[] = DARTMOUTH_PUBLIC_SSID;        // your network SSID (name)
-  char pass[] = DARTMOUTH_PUBLIC_PASS;    // your network password (use for WPA, or use as key for WEP)
-
-  WiFiSSLClient wifiClient;  //used to upload to thingspeak
-  const char* server = "api.thingspeak.com";
-  #define PORT 443 //post used by the WiFiSSLClient to send through http (try 80 for HTTP request for WifiWebClient)
-  HttpClient client = HttpClient(wifiClient, server, PORT);
-
-  #define OD_CHANNEL_ID 2926522
-  #define TEMP_CHANNEL_ID 3098483 
+#if IODR_ID == 1  
   // API keys are in secret.h file
   // OD_API_KEY
   // TEMP_API_KEY
   #define TEMP_INT_CHANNEL 1 //channel number for IODR #1 internal temperature data
   #define TEMP_EXT_CHANNEL 2 //channel number for IODR #1 external temperature data
   #define TEMP_SENSE_PIN 44 // Pin 44 for external temperature sensor; pin 8 for internal
-
-  #define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 #endif
 
 // old parameters for IODR #1 have been deprecated
 
 // Parameters for IODR #2
 #if IODR_ID == 2
-  #include <Ethernet2.h> //ethernet shield W5500 chip
-  
   // ThingSpeak parameters for IODR #2
-  #define OD_CHANNEL_ID 441742
-  #define OD_API_KEY "P212KDUXZPL5BAFA" //write API key
-  #define TEMP_CHANNEL_ID 890567
-  #define TEMP_API_KEY "C509JHJCZNRGDNRE" //write API key
+  // API keys are in secret.h file
+  // OD_API_KEY
+  // TEMP_API_KEY
   #define TEMP_INT_CHANNEL 3 //channel number for IODR #2 internal temperature data
   #define TEMP_EXT_CHANNEL 4 //channel number for IODR #2 external temperature data
   #define TEMP_SENSE_PIN 44
-
-  // Network parameters for IODR #2
-  byte mac[] = { 0x90, 0xA2, 0xDA, 0x0D, 0xA7, 0x42 }; //mac address for IODR #2
-  byte ip[] =      {129, 170, 64, 63}; //the IP address for IODR #2
 #endif
 
 
 // Parameters for IODR #3
 #if IODR_ID == 3
-  #include <Ethernet2.h> //ethernet shield W5500 chip
-
   // ThingSpeak parameters for IODR #3
-  #define OD_CHANNEL_ID 469909
-  #define OD_API_KEY "TE0K3BIY5JQECY51" //write API key
-  #define TEMP_CHANNEL_ID 890567
-  #define TEMP_API_KEY "C509JHJCZNRGDNRE" //write API key
+  // API keys are in secret.h file
+  // OD_API_KEY
+  // TEMP_API_KEY
   #define TEMP_INT_CHANNEL 5 //channel number for IODR #3 internal temperature data
   #define TEMP_EXT_CHANNEL 6 //channel number for IODR #3 external temperature data
   #define TEMP_SENSE_PIN 8 // this device doesn't have an external temperature sensor, so use the internal one
-
-  // Network parameters for IODR #3
-  byte mac[] = { 0x90, 0xA2, 0xDA, 0x0D, 0x45, 0x10 }; //mac address for IODR #1 old ethernet shield
-  byte ip[] =      { 129, 170, 64, 62 }; //the IP address for IODR #3
 #endif
 
 #define POT_CALIBRATION_WINDOW 5000 // 5 seconds to enter calibration window
