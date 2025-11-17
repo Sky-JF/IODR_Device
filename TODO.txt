@@ -27,6 +27,9 @@ Ongoing:
   - Out-of-memory crashes may occur because of string concatenation use instead of
 snprintf()
   - Implement over-the-air uploads
+  https://support.arduino.cc/hc/en-us/articles/12370721200540-Configure-GIGA-R1-WiFi-Portenta-H7-and-Portenta-Machine-Control-for-Over-The-Air-OTA-uploads?utm_source=chatgpt.com
+  https://docs.arduino.cc/arduino-cloud/features/ota-getting-started
+  https://github.com/JAndrassy/ArduinoOTA/blob/master/examples/WiFi101_OTA/WiFi101_OTA.ino
 
 
 
