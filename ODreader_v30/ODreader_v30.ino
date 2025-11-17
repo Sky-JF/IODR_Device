@@ -35,7 +35,7 @@ A7: light sensor for tube 1 (old pin is A15)
 #define VERSION 30
 
 // hardware ID
-#define IODR_ID 3
+#define IODR_ID 2
 
 // Libraries
 #include <stdlib.h>
@@ -88,7 +88,7 @@ HttpClient client = HttpClient(wifiClient, server, PORT);
   // TEMP_API_KEY
   #define TEMP_INT_CHANNEL 3 //channel number for IODR #2 internal temperature data
   #define TEMP_EXT_CHANNEL 4 //channel number for IODR #2 external temperature data
-  #define TEMP_SENSE_PIN 44
+  #define TEMP_SENSE_PIN 8
 #endif
 
 
