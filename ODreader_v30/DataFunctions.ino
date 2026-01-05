@@ -7,7 +7,7 @@ const char* blankTubeKeys[] = {"/kv/TubeBlank1", "/kv/TubeBlank2", "/kv/TubeBlan
 //address 2 and 3 store the second blank value
 // KVStore references: https://os.mbed.com/docs/mbed-os/v6.12/apis/kvstore.html
 void writeBlankToKVStore(int tubeIndex) {
-  Serial << "******************* writeBlankToEEPROM() ******************";
+  Serial << "******************* writeBlankToKVStore() ******************";
   Serial.print("\nWriting blank value for tube ");
   Serial.print(tubeIndex);
   Serial.println(" into KVStore");
@@ -15,9 +15,9 @@ void writeBlankToKVStore(int tubeIndex) {
   kv_set(blankTubeKeys[tubeIndex], &value, sizeof(value), 0); // last parameter set to 0 
 }
 
-//read blank value from EEPROM
+//read blank value from KVStore
 void readBlankFromKVStore(int tubeIndex) {
-  Serial << "************************** readBlankFromEEPROM() **************************************";
+  Serial << "************************** readBlankFromKVStore() **************************************";
   Serial.print("\nReading blank value for tube ");
   Serial.print(tubeIndex);
   Serial.println(" from KVStore");
@@ -66,7 +66,7 @@ void checkBlankButtons() {
     if (blankButtonState[i] > NUM_CYCLES_TO_RESET) {
       blankValue[i] = (int)lightIn[i]; // reset blankValue for tube i
       Serial << "blankButtonState[" << i << "]=" << blankValue[i];
-      writeBlankToKVStore(i);// write value to EEPROM, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility %%%
+      writeBlankToKVStore(i);// write value to KVStore, this saves the value even if the arduino is reset; giga R1 does not have EEPROM compatibility 
       displayTubeReset(i); // write a message to the serial LCD saying the tube was reset
       blankButtonState[i] = 0; // reset the blank button state
     }
@@ -357,6 +357,136 @@ void  uploadDataToThingspeak() {
     }
   }
   else{
+    numFailedUploads += 1;
+    Serial2 << gloClear << "Failed uploads = " << numFailedUploads;
+    Serial.print("Failed uploads = ");
+    Serial.println(numFailedUploads);
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("ATTENTION: Wifi was not connected on this failed data upload");
+    }
+    // try to reset the network connection and re-connect to thingspeak
+    //Ethernet.begin(mac, ip, dnsServer, gateway, subnet); // try to connect to the network with fixed IP address; commented out for giga
+    watchdog.kick();
+    delay(3000); // allow time to read the display
+  }
+
+  // this if block should be unnecessary, since the watchdog timer will reset after 5 minutes with no successful upload (i.e. about 5 failed tries)
+  if (numFailedUploads > MAX_FAILED_UPLOADS){
+    Serial2 << gloClear << "Upload error: waiting to reset..."; 
+
+    // try reconnecting client and wifi
+    WiFi.disconnect(); // disconnect from wifi
+    connectToWifi(); // try to reconnect
+
+    watchdog.kick();
+    delay(5000); // wait for stable wifi connection
+    //digitalWrite(wdTimer, LOW); // turn off the upload light to allow the watchdog timer to reset %%% not using wdTimer
+    //delay(400000); // delay 6 minutes, should trigger watchdog timer to reset
+  }
+}
+
+// Send data to InfluxDB
+// %%%
+void uploadDataToInfluxDB() {
+  // send information to OLED display
+  Serial2 << gloClear << "Sending data to InfluxDB...";
+  
+  // Send post request
+  // Example:
+  // curl
+  // --request POST "https://us-east-1-1.aws.cloud2.influxdata.com/api/v2/write?org=IODR&bucket=IODR_test&precision=s" 
+  // --header "Authorization: Token NFVyk88m5ablSOvIYGeIr5hbkQWUwYbUXOt-ZAglM5NoGmCisBWiqMnG6StWSvS2e69wUYJzJstU2eF1U2iPSw==" 
+  // --header "Content-Type: text/plain; charset=utf-8" 
+  // --header "Accept: application/json" 
+  // --data-binary "airSensors,sensor_id=TLM0201 temperature=16"
+
+  String influxdbApiToken = INFLUXDB_API_KEY;
+  String orgName = ORG_NAME;
+  String bucketName = BUCKET_NAME;
+
+  //loop through datastreams (except temperature) and update data
+  String path = "/api/v2/write?org=" + orgName + "&bucket=" + "&precision=s"; //use precision of seconds (instead of nanoseconds)
+  String postData = "";
+  for (int i = 0; i < numTubes; i++) {
+    postData += "IODR_" + String(IODR_ID) + ",tube_number=" + String(i+1) + " OD=" + String(ODvalue[i]); //set each field one-by-one, index tube numbers just like thingspeak
+    if (i < 7) {
+      postData += "\n";
+    }
+  }
+  Serial.println("Server: " + String(server));
+  Serial.println("Requesting: " + path);
+  
+  watchdog.kick();
+  
+  // send OD data to influxdb
+  Serial.println("sending OD data to influxdb");
+  client_influx.beginRequest();
+  client_influx.post(path);
+  client_influx.sendHeader("Authorization", "Token " + influxdbApiToken);
+  client_influx.sendHeader("Content-Type", "text/plain; charset=utf-8");
+  client_influx.sendHeader("Accept", "application/json");
+
+  // body of post request
+  client_influx.beginBody();
+  client_influx.print(postData);
+
+  client_influx.endRequest();
+  delay(100); // allow response to be received by client
+  watchdog.kick();
+
+  // Server response from OD upload attempt
+  int odStatusCode = client_influx.responseStatusCode();
+  String odBody = client_influx.responseBody();
+  Serial.print("OD upload status code: ");
+  Serial.println(odStatusCode);
+  Serial.println("Http response body: " + odBody);
+  //readRawHttp(); // *** %%% try to get raw http if want to debug more
+  Serial2 << gloClear << "OD code: " << odStatusCode; // send response to OLED display
+  client_influx.stop(); // end use of this socket 
+
+  delay(500); // test rate_limits, this seems to improve connectivity *** %%% maybe different for influxdb
+
+  watchdog.kick();
+  //send temperature data to thingspeak
+  Serial.println("sending temperature data to influxdb");
+  postData = "IODR_" + String(IODR_ID) + ",IODR_ID=" + String(IODR_ID) + " OD=" + String(temperature);
+
+  Serial.println("Server: " + String(server));
+  Serial.println("Requesting: " + path);
+
+  // send temp data to thingspeak
+  Serial.println("sending temperature data to thingspeak");
+  client_influx.beginRequest();
+  client_influx.post(path);
+  client_influx.sendHeader("Authorization", "Token " + influxdbApiToken);
+  client_influx.sendHeader("Content-Type", "text/plain; charset=utf-8");
+  client_influx.sendHeader("Accept", "application/json");
+
+  // body of post request
+  client_influx.beginBody();
+  client_influx.print(postData);
+
+  client_influx.endRequest();
+  delay(100); // allow response to be received by client
+  watchdog.kick();
+
+  // Server response from temperature upload attempt
+  int tempStatusCode = client_influx.responseStatusCode();
+  Serial.print("Temp upload status code: ");
+  Serial.println(tempStatusCode);
+  //readRawHttp(); // *** %%% try to get raw http if want to debug more
+  Serial.println("Http response body: " + client_influx.responseBody());
+  Serial2 << gloReturn << "Temp code: " << tempStatusCode; // send response to OLED display
+  client_influx.stop(); // close again
+
+  delay(3000); // enough time to read the display
+
+  if (odStatusCode == 200){ // 200 is the server response from Thingspeak indicating success
+    numFailedUploads = 0;
+    Serial.println("numFailedUploads reset");
+    delay(500);
+  }
+  else if (false) { // implement this after fully switching to influxdb ~~~
     numFailedUploads += 1;
     Serial2 << gloClear << "Failed uploads = " << numFailedUploads;
     Serial.print("Failed uploads = ");

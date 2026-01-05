@@ -35,7 +35,7 @@ A7: light sensor for tube 1 (old pin is A15)
 #define VERSION 30
 
 // hardware ID
-#define IODR_ID 2
+#define IODR_ID 3
 
 // Libraries
 #include <stdlib.h>
@@ -63,8 +63,12 @@ char pass[] = DARTMOUTH_PUBLIC_PASS;    // your network password (use for WPA, o
 
 WiFiSSLClient wifiClient;  //used to upload to thingspeak
 const char* server = "api.thingspeak.com";
-#define PORT 443 //post used by the WiFiSSLClient to send through http (try 80 for HTTP request for WifiWebClient)
+#define PORT 443 //post used by the WiFiSSLClient to send through https (try 80 for HTTP request for WifiWebClient)
 HttpClient client = HttpClient(wifiClient, server, PORT);
+
+WiFiSSLClient wifiClient_influx;
+const char* server_influx = "us-east-1-1.aws.cloud2.influxdata.com";
+HttpClient client_influx = HttpClient(wifiClient_influx, server_influx, PORT); //same port as above
 
 #define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 
