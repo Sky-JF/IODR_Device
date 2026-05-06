@@ -3,3 +3,5 @@ ODreader_v30/build/
 accessToken.txt
 API_REQUEST_EXAMPLE.txt
 InfluxDB_example
+notes_influxdb*
+TODO.*

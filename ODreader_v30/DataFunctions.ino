@@ -405,13 +405,10 @@ void uploadDataToInfluxDB() {
   String bucketName = BUCKET_NAME;
 
   //loop through datastreams (except temperature) and update data
-  String path = "/api/v2/write?org=" + orgName + "&bucket=" + "&precision=s"; //use precision of seconds (instead of nanoseconds)
+  String path = "/api/v2/write?org=" + orgName + "&bucket=" + BUCKET_NAME + "&precision=s"; //use precision of seconds (instead of nanoseconds)
   String postData = "";
   for (int i = 0; i < numTubes; i++) {
-    postData += "IODR_" + String(IODR_ID) + ",tube_number=" + String(i+1) + " OD=" + String(ODvalue[i]); //set each field one-by-one, index tube numbers just like thingspeak
-    if (i < 7) {
-      postData += "\n";
-    }
+    postData += "IODR_" + String(IODR_ID) + ",tube_number=" + String(i+1) + " OD=" + String(ODvalue[i]) + "\n"; //set each field one-by-one, index tube numbers just like thingspeak
   }
   Serial.println("Server: " + String(server));
   Serial.println("Requesting: " + path);
@@ -427,6 +424,7 @@ void uploadDataToInfluxDB() {
   client_influx.sendHeader("Accept", "application/json");
 
   // body of post request
+  client_influx.sendHeader("Content-Length", postData.length());
   client_influx.beginBody();
   client_influx.print(postData);
 
@@ -436,10 +434,10 @@ void uploadDataToInfluxDB() {
 
   // Server response from OD upload attempt
   int odStatusCode = client_influx.responseStatusCode();
-  String odBody = client_influx.responseBody();
+  // String odBody = client_influx.responseBody(); // Do not request body, body is always empty upon response
   Serial.print("OD upload status code: ");
   Serial.println(odStatusCode);
-  Serial.println("Http response body: " + odBody);
+  // Serial.println("Http response body: " + odBody);
   //readRawHttp(); // *** %%% try to get raw http if want to debug more
   Serial2 << gloClear << "OD code: " << odStatusCode; // send response to OLED display
   client_influx.stop(); // end use of this socket 
@@ -463,6 +461,7 @@ void uploadDataToInfluxDB() {
   client_influx.sendHeader("Accept", "application/json");
 
   // body of post request
+  client_influx.sendHeader("Content-Length", postData.length());
   client_influx.beginBody();
   client_influx.print(postData);
 
@@ -475,7 +474,7 @@ void uploadDataToInfluxDB() {
   Serial.print("Temp upload status code: ");
   Serial.println(tempStatusCode);
   //readRawHttp(); // *** %%% try to get raw http if want to debug more
-  Serial.println("Http response body: " + client_influx.responseBody());
+  // Serial.println("Http response body: " + client_influx.responseBody());
   Serial2 << gloReturn << "Temp code: " << tempStatusCode; // send response to OLED display
   client_influx.stop(); // close again
 

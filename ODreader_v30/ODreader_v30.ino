@@ -66,9 +66,10 @@ const char* server = "api.thingspeak.com";
 #define PORT 443 //post used by the WiFiSSLClient to send through https (try 80 for HTTP request for WifiWebClient)
 HttpClient client = HttpClient(wifiClient, server, PORT);
 
-WiFiSSLClient wifiClient_influx;
-const char* server_influx = "us-east-1-1.aws.cloud2.influxdata.com";
-HttpClient client_influx = HttpClient(wifiClient_influx, server_influx, PORT); //same port as above
+WiFiClient wifiClient_influx;
+const char* server_influx = "10.12.14.133";
+#define INFLUX_PORT 8086
+HttpClient client_influx = HttpClient(wifiClient_influx, server_influx, INFLUX_PORT); //same port as above
 
 #define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 
@@ -287,14 +288,15 @@ void loop()
     //blankButtonStatusDisplay();
   }
 
-    // send data to Thingspeak
+    // send data to Thingspeak/InfluxDB
   if (millis() - lastConnectionTime > connectionInterval) { 
     Serial.println("@@@@@ yellow LED on @@@@@");
     digitalWrite(yellowLED, HIGH); // turn on yellow LED when sending data to Thingspeak  
     
     //connect to thingspeak
-    Serial.println("@@@@@ uploadDataToThingspeak() @@@@@");
-    uploadDataToThingspeak(); 
+    Serial.println("@@@@@ uploadDataToInfluxDB() @@@@@");
+    //uploadDataToThingspeak(); 
+    uploadDataToInfluxDB();
     Serial.println("@@@@@ checkTiming() @@@@@");
     checkTiming(); 
     // update connection time so we wait before connecting again
