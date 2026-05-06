@@ -410,7 +410,7 @@ void uploadDataToInfluxDB() {
   for (int i = 0; i < numTubes; i++) {
     postData += "IODR_" + String(IODR_ID) + ",tube_number=" + String(i+1) + " OD=" + String(ODvalue[i]) + "\n"; //set each field one-by-one, index tube numbers just like thingspeak
   }
-  Serial.println("Server: " + String(server));
+  Serial.println("Server: " + String(server_influxdb));
   Serial.println("Requesting: " + path);
   
   watchdog.kick();
@@ -447,9 +447,9 @@ void uploadDataToInfluxDB() {
   watchdog.kick();
   //send temperature data to thingspeak
   Serial.println("sending temperature data to influxdb");
-  postData = "IODR_" + String(IODR_ID) + ",IODR_ID=" + String(IODR_ID) + " OD=" + String(temperature);
+  postData = "IODR_" + String(IODR_ID) + ",IODR_ID=" + String(IODR_ID) + " temperature=" + String(temperature);
 
-  Serial.println("Server: " + String(server));
+  Serial.println("Server: " + String(server_influxdb));
   Serial.println("Requesting: " + path);
 
   // send temp data to thingspeak
@@ -541,6 +541,7 @@ void connectToWifi() {
     WiFi.begin(ssid, pass);
     // wait 3 seconds for connection:
     delay(3000);
+    Serial.println(WiFi.status());
   }
   Serial.println("Connected to wifi");
   serialPrintWifiStatus();

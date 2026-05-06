@@ -67,9 +67,9 @@ const char* server = "api.thingspeak.com";
 HttpClient client = HttpClient(wifiClient, server, PORT);
 
 WiFiClient wifiClient_influx;
-const char* server_influx = "10.12.14.133";
+const char* server_influxdb = "olsonlab-iodr.kiewit.dartmouth.edu";
 #define INFLUX_PORT 8086
-HttpClient client_influx = HttpClient(wifiClient_influx, server_influx, INFLUX_PORT); //same port as above
+HttpClient client_influx = HttpClient(wifiClient_influx, server_influxdb, INFLUX_PORT); //same port as above
 
 #define ADC_12_BITS 12 // 12-bit ADC to more accurately measure light sensor
 
@@ -174,6 +174,7 @@ byte dnsServer[] =     { 129, 170, 64, 43 }; //the DNS server address for both I
 //------------------------------------------------------------------------
 void setup(void) {
   Serial.begin(115200); //serial port for debugging set to 115200 baud
+  //while (!Serial);
   delay(1000); // Give time for the serial port to connect
 
   analogReadResolution(ADC_12_BITS); // Use 12-bit resolution for the analogRead() function
