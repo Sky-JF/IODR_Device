@@ -1,38 +1,32 @@
 # Arduino Ethernet Sensor Project
 
 Arduino Giga R1 
-**Update README**
 
-This project uses an Arduino with an Ethernet shield to collect and transmit sensor data over the internet. It is designed to be an efficient way to monitor growth of bacterial cultures remotely.
+This project uses an Arduino Giga R1 to collect and transmit sensor data over the internet. It is designed to be an efficient way to monitor growth of bacterial cultures remotely.
+
+## Navigation
+- `ODreader_v30`
+
+Directory with the .ino files used by the Arduino IDE to upload the code. 
+
+## How to use
+Open the `ODreader_v30` folder with the Arduino IDE and upload the code. 
 
 ## Features
 - Uses a watch dog timer to supervise state of the Arduino board
 - Reads sensor data from 8 tubes with connected sensors
-- Uses an Ethernet shield to send data over the Internet
 - Integrates the ThingSpeak cloud platform for remote monitoring
+- Integrates InfluxDB on a locally run server for locally storing data
 - Prints data collected to OLED display
 - Allows for reset of data collected for individual tubes
 
 ## Hardware 
-- Arduino board
-- Ethernet shield (W5500)
+- Arduino Giga R1 board
 - Light Sensor
 - Temperature Sensor (DS18B20)
 
-## Libraries Included
-- `<SPI.h>` Serial Peripheral Interface for communication with wifi or ethernet shield
-- `<avr/wdt.h>` Watchdog Timer for AVR microcontroller
-- `<OneWire.h>` For communication protocol with temperature sensors
-- `<DallasTemperature.h>` Handling data from the temperature sensor
-- `<Math.h>` 
-- `<SoftwareSerial.h>` Communication to LCD display
-- `"ThingSpeak.h"` Connection to ThingSpeak cloud 
-- `<EEPROM.h>` Store persistent data (blank values) between power offs
-- `<gloSerialOLED.h>` Printing in LCD display
-- `<Ethernet2.h>` Library for the shield W5500 chip
-
-  ## Additional Resources and Software Used
-  - [Database with processed IODR data](https://iodr-605db139538a.herokuapp.com)
-  - [GitHub page for the database with the IODR data](https://github.com/danolson1/IODR_project?tab=readme-ov-file#readme)
-  - [Thingspeak data](https://thingspeak.mathworks.com/channels/469909)
+## Additional Resources and Software Used
+- [Frontend data viewer](https://iodr-605db139538a.herokuapp.com)
+- [GitHub repository for frontend data viewer](https://github.com/danolson1/IODR_project?tab=readme-ov-file#readme)
+- [Thingspeak data webpage](https://thingspeak.mathworks.com/channels/469909)
 
