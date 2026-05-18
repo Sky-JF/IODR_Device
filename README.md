@@ -1,4 +1,4 @@
-# Arduino Ethernet Sensor Project
+# Arduino Internet Sensor Project
 
 Arduino Giga R1 
 
