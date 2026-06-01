@@ -9,6 +9,10 @@ This project uses an Arduino Giga R1 to collect and transmit sensor data over th
 
 Directory with the .ino files used by the Arduino IDE to upload the code. 
 
+- `secrets_template.h`
+
+Template file with constant used in `ODreader_v30`, which include API keys, device IDs, and other information relating to connected databases.
+
 ## How to use
 Open the `ODreader_v30` folder with the Arduino IDE and upload the code. 
 
